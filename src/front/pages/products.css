@@ -1,0 +1,154 @@
+:root{
+  --bg:#f2f3f5;
+  --card:#fff;
+  --line:#e5e7eb;
+  --text:#111827;
+  --muted:#6b7280;
+  --brand:#111;
+  --accent:#111;
+  --r-sm:10px;
+  --r-md:14px;
+  --r-lg:16px;
+  --gap:16px;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;
+  color:var(--text);
+  background:var(--bg);
+}
+
+.products-page{min-height:100dvh;display:flex;flex-direction:column}
+
+/* ---------- Header (si lo usas) ---------- */
+.topbar{
+  height:64px;
+  display:grid;align-items:center;
+  grid-template-columns:44px 1fr auto 420px auto;
+  gap:12px;padding:0 16px;
+  background:#fff;border-bottom:1px solid var(--line)
+}
+.brand{font-weight:700;color:var(--brand)}
+.nav{color:var(--muted)}
+.search{display:flex;gap:8px;align-items:center}
+.search input{
+  width:100%;padding:10px 12px;
+  border:1px solid var(--line);border-radius:var(--r-sm);
+  background:#fafafa
+}
+.icon-btn{
+  width:36px;height:36px;display:inline-grid;place-items:center;
+  border:1px solid var(--line);background:#fff;border-radius:var(--r-sm);
+  cursor:pointer
+}
+.actions{display:flex;gap:8px}
+
+/* ---------- Layout base ---------- */
+.content{
+  flex:1;
+  display:grid;gap:var(--gap);padding:var(--gap);
+  grid-template-columns:260px 1fr
+}
+
+/* ---------- Sidebar ---------- */
+.sidebar{
+  position:relative;
+  background:#fff;border:1px solid var(--line);border-radius:var(--r-md);
+  padding:16px
+}
+.sidebar h4{margin:10px 0}
+.sidebar-title{margin-top:20px;color:var(--muted);font-weight:600}
+.sidebar ul{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.sidebar a{color:inherit;text-decoration:none}
+.radio{display:flex;align-items:center;gap:8px}
+.radio input{accent-color:var(--accent)}
+.radio .label{text-transform:capitalize}
+
+/* Botón cerrar (solo móvil, se activa en @media) */
+.sidebar-close{
+  display:none;position:absolute;top:10px;right:12px;
+  width:34px;height:34px;line-height:1;
+  border:1px solid var(--line);background:#fff;border-radius:var(--r-sm);
+  cursor:pointer
+}
+
+/* ---------- Main/grid/cards ---------- */
+.main{display:grid;gap:var(--gap)}
+.grid{
+  display:grid;gap:var(--gap);
+  grid-template-columns:repeat(3,minmax(0,1fr))
+}
+.card{
+  display:grid;grid-template-rows:170px auto;
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);
+  overflow:hidden
+}
+.thumb{background:#eef0f3;display:grid;place-items:center}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.info{padding:10px 12px 14px}
+.name{margin:0 0 8px;font:600 15px/1.2 system-ui}
+.row{display:flex;justify-content:space-between;align-items:center}
+.price{font-weight:700}
+.mini-btn{
+  padding:8px 12px;border:none;border-radius:var(--r-sm);
+  background:var(--accent);color:#fff;cursor:pointer
+}
+
+/* CTA */
+.custom-cta{display:grid}
+.cta-btn{
+  height:88px;font-size:20px;cursor:pointer;
+  background:#fff;border:2px dashed var(--line);border-radius:var(--r-lg);
+  transition:transform .05s ease-in-out
+}
+.cta-btn:active{transform:scale(.99)}
+
+/* Footer */
+.footer{margin-top:8px;padding:18px;text-align:center;color:var(--muted)}
+
+/* ---------- Backdrop + barra filtros (solo móvil) ---------- */
+.sidebar-backdrop{
+  position:fixed;inset:0;z-index:1030;
+  background:rgba(0,0,0,.35);
+  opacity:0;pointer-events:none;transition:opacity .2s ease
+}
+.sidebar-backdrop.show{opacity:1;pointer-events:auto}
+.filters-bar{display:none;margin-bottom:8px}
+.filters-toggle{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:10px 12px;border:1px solid var(--line);background:#fff;border-radius:var(--r-sm);
+  cursor:pointer
+}
+
+/* ---------- Responsive ---------- */
+.only-mobile{display:none}
+
+/* Grid y topbar en tablets */
+@media (max-width:1024px){
+  .topbar{grid-template-columns:44px 1fr 0 minmax(0,1fr) auto}
+  .nav{display:none}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+/* Off-canvas sidebar en ≤992px */
+@media (max-width:992px){
+  .content{grid-template-columns:1fr}            /* apila */
+  .filters-bar{display:block}
+  .only-mobile{display:inline-grid}
+
+  .sidebar{
+    position:fixed;inset:0 auto 0 0;            /* top:0;left:0;bottom:0 */
+    width:82%;max-width:340px;height:100dvh;overflow-y:auto;
+    transform:translateX(-110%);transition:transform .2s ease;z-index:1040;
+    border-radius:0 var(--r-md) var(--r-md) 0
+  }
+  .sidebar.open{transform:translateX(0)}
+  .sidebar-close{display:inline-grid;place-items:center}
+}
+
+/* Móvil pequeño */
+@media (max-width:520px){
+  .grid{grid-template-columns:1fr}
+}
