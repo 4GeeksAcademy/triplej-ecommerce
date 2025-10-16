@@ -1,0 +1,92 @@
+[
+  {
+    "artist_id": 1,
+    "name": "Cuadro decorativo 'Atardecer en Venecia'",
+    "category": "HOME_DECORATION",
+    "details": "Pintura al óleo sobre lienzo de 50x70 cm, ideal para salones modernos",
+    "amount": 3,
+    "price": 250,
+    "discount": 10
+  },
+  {
+    "artist_id": 4,
+    "name": "Escultura de mármol 'El Pensador Moderno'",
+    "category": "SCULPTURES",
+    "details": "Escultura tallada en mármol blanco de 40 cm de altura, pieza exclusiva",
+    "amount": 1,
+    "price": 1200,
+    "discount": 5
+  },
+  {
+    "artist_id": 5,
+    "name": "Cuadro decorativo digital 'Cyber Dream'",
+    "category": "HOME_DECORATION",
+    "details": "Impresión digital en alta resolución con marco de aluminio",
+    "amount": 10,
+    "price": 80,
+    "discount": 15
+  },
+  {
+    "artist_id": 1,
+    "name": "Fotografía decorativa 'Luces de Tokio'",
+    "category": "HOME_DECORATION",
+    "details": "Fotografía nocturna de larga exposición en edición limitada, lista para colgar",
+    "amount": 5,
+    "price": 150,
+    "discount": 0
+  },
+  {
+    "artist_id": 4,
+    "name": "Grabado 'Geometría Interior'",
+    "category": "HOME_DECORATION",
+    "details": "Grabado abstracto en papel artesanal de 30x40 cm, con marco de madera natural",
+    "amount": 4,
+    "price": 90,
+    "discount": 10
+  },
+  {
+    "artist_id": 6,
+    "name": "Escultura de piedra 'Montañas al Amanecer'",
+    "category": "SCULPTURES",
+    "details": "Obra tallada en piedra natural con acabados suaves, perfecta para interiores",
+    "amount": 2,
+    "price": 180,
+    "discount": 5
+  },
+  {
+    "artist_id": 6,
+    "name": "Retrato decorativo 'Clásico a Grafito'",
+    "category": "HOME_DECORATION",
+    "details": "Dibujo realista enmarcado, hecho a lápiz sobre papel A3",
+    "amount": 1,
+    "price": 130,
+    "discount": 0
+  },
+  {
+    "artist_id": 5,
+    "name": "Collage decorativo 'Fragmentos de Ciudad'",
+    "category": "HOME_DECORATION",
+    "details": "Composición artística con recortes y acrílicos sobre bastidor de madera",
+    "amount": 3,
+    "price": 220,
+    "discount": 10
+  },
+  {
+    "artist_id": 4,
+    "name": "Tinta decorativa 'Serpiente del Bosque'",
+    "category": "HOME_DECORATION",
+    "details": "Dibujo en tinta negra sobre papel de arroz, ideal para espacios zen",
+    "amount": 6,
+    "price": 75,
+    "discount": 0
+  },
+  {
+    "artist_id": 5,
+    "name": "Escultura de madera 'Raíces del Alma'",
+    "category": "SCULPTURES",
+    "details": "Tallada a mano en madera de olivo con acabado natural, pieza artesanal",
+    "amount": 2,
+    "price": 600,
+    "discount": 8
+  }
+]
