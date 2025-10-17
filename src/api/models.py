@@ -87,6 +87,7 @@ class User(db.Model):
 class CategoryEnum(enum.Enum):
     HOME_DECORATION = "home_decoration"
     SCULPTURES = "sculptures"
+    STATUE = "statue"
 
 
 class Product(db.Model):
@@ -100,6 +101,7 @@ class Product(db.Model):
     amount: Mapped[int] = mapped_column(Integer, nullable=False)
     price: Mapped[int] = mapped_column(Integer, nullable=False)
     discount: Mapped[int] = mapped_column(Integer, nullable=False)
+    img_path: Mapped[str] = mapped_column(String(120), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
@@ -110,6 +112,7 @@ class Product(db.Model):
     artist: Mapped["User"] = relationship(back_populates="products")
     orders: Mapped[list["Order"]] = relationship(
         secondary="prod_order", back_populates="products")
+
 
     def serialize(self):
         return {
