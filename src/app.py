@@ -171,8 +171,8 @@ def add_favorites():
 @app.route('/products', methods=['GET'])
 def get_products():
     try:
-        products = db.session.execute(db.select(Product)).scalars.all()
-        return jsonify(products), 200
+        products = db.session.execute(db.select(Product)).scalars().all()
+        return jsonify([product.serialize() for product in products]), 200
     except Exception as e:
         raise APIException(str(e), status_code=500)
 
