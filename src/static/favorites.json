@@ -1,0 +1,26 @@
+[
+    {
+        "user_id": 1,
+        "prod_id": 2
+    },
+    {
+        "user_id": 1,
+        "prod_id": 3
+    },
+    {
+        "user_id": 2,
+        "prod_id": 3
+    },
+    {
+        "user_id": 4,
+        "prod_id": 1
+    },
+    {
+        "user_id": 4,
+        "prod_id": 2
+    },
+    {
+        "user_id": 4,
+        "prod_id": 3
+    }
+]
