@@ -57,7 +57,7 @@ class User(db.Model):
     email: Mapped[str] = mapped_column(
         String(120), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String(120), nullable=False)
-    rol: Mapped[RoleEnum] = mapped_column(Enum(RoleEnum), nullable=False)
+    rol: Mapped[RoleEnum] = mapped_column(Enum(RoleEnum, name="roleenum"), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -95,7 +95,7 @@ class Product(db.Model):
     artist_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("user.id"), nullable=False)
     name: Mapped[str] = mapped_column(String(120), nullable=False)
-    category: Mapped[str] = mapped_column(Enum(CategoryEnum), nullable=False)
+    category: Mapped[str] = mapped_column(Enum(CategoryEnum, name="categoryenum"), nullable=False)
     details: Mapped[str] = mapped_column(String(120), nullable=False)
     amount: Mapped[int] = mapped_column(Integer, nullable=False)
     price: Mapped[int] = mapped_column(Integer, nullable=False)
