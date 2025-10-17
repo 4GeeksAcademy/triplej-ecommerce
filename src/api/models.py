@@ -97,7 +97,7 @@ class Product(db.Model):
         Integer, ForeignKey("user.id"), nullable=False)
     name: Mapped[str] = mapped_column(String(120), nullable=False)
     category: Mapped[str] = mapped_column(Enum(CategoryEnum, name="categoryenum"), nullable=False)
-    details: Mapped[str] = mapped_column(String(120), nullable=False)
+    details: Mapped[str] = mapped_column(String(1000), nullable=False)
     amount: Mapped[int] = mapped_column(Integer, nullable=False)
     price: Mapped[int] = mapped_column(Integer, nullable=False)
     discount: Mapped[int] = mapped_column(Integer, nullable=False)
