@@ -124,6 +124,7 @@ class Product(db.Model):
             "amount": self.amount,
             "price": self.price,
             "discount": self.discount,
+            "img_path": self.img_path,
             "created_at": self.created_at,
         }
 
