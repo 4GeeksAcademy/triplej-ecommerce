@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import logo from "../assets/img/logo.png"
+// import logo from "assets/img/logo.png"
 
 export const Navbar = () => {
 
@@ -34,7 +34,7 @@ export const Navbar = () => {
         {/* Logo y nombre */}
          <Link className="nav-link fw-semibold" to="/">
           <img
-            src={logo}
+            src="assets/img/logo.png"
             alt="Logo"
             width="50"
             height="50"

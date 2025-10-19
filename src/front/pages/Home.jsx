@@ -1,88 +1,104 @@
-import React from "react";
-import product1 from "../assets/img/product1.jpg";
-import product2 from "../assets/img/product2.jpg";
-import product3 from "../assets/img/product3.jpg";
-import product4 from "../assets/img/product4.jpg";
-import nosotrosImg from "../assets/img/nosotros.jpg";
-import artistasImg from "../assets/img/artistas.jpg";
+import React, { useEffect, useMemo, useState } from "react";
+
+// Agrupa en chunks de tamaño `size`: [a,b,c,d,e,f] -> [[a,b,c],[d,e,f]]
+const chunk = (arr, size) =>
+  arr.reduce((acc, _, i) => (i % size ? acc : [...acc, arr.slice(i, i + size)]), []);
+
+// Normaliza la ruta (evita // y asegura barra inicial)
+const normalizeImgPath = (path) => {
+  let s = (path ?? "").toString().trim();
+  if (!s) return "";
+  s = s.replace(/^\/+/, "/");
+  if (!s.startsWith("/")) s = `/${s}`;
+  return s;
+};
 
 export const Home = () => {
-  return (
-    
-	<div className="container-fluid my-5">
+  const [all_products, setAllProducts] = useState([]);
+  const [status, setStatus] = useState("idle");  // idle | loading | error
+  const [error, setError] = useState("");
 
-      {/* Título del carrusel */}
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setStatus("loading");
+        const res = await fetch("/products"); // ← pasa por el proxy
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        setAllProducts(data);
+        setStatus("idle");
+      } catch (e) {
+        console.error("Error cargando productos:", e);
+        setError(String(e));
+        setStatus("error");
+      }
+    };
+    load();
+  }, []);
+
+  // Prepara slides de 3 productos
+  const slides = useMemo(() => chunk(all_products, 3), [all_products]);
+
+  return (
+    <div className="container-fluid my-5">
       <h2 className="text-center mb-4 fw-bold">Best Product</h2>
 
-      {/* Carrusel centrado con 10% de separación a cada lado */}
-      <div
-        className="carousel-container mx-auto"
-        style={{
-          width: "90%",       // ocupa 80% del ancho
-          marginLeft: "5%",  // separación izquierda
-          marginRight: "5%", // separación derecha
-        }}
-      >
+      {status === "loading" && <p className="text-center">Cargando productos…</p>}
+      {status === "error" && <p className="text-danger text-center">{error}</p>}
+
+      {slides.length > 0 && (
         <div
-          id="carouselExampleControls"
+          id="carouselProducts"
           className="carousel slide"
           data-bs-ride="carousel"
+          style={{ width: "90%", margin: "0 auto" }}
         >
           <div className="carousel-inner">
-            {/* Primer grupo de 3 imágenes */}
-            <div className="carousel-item active">
-              <div className="d-flex justify-content-center">
-                <img
-                  src={product1}
-                  alt="Product 1"
-                  className="mx-2"
-                  style={{ width: "33%", height: "250px", objectFit: "cover" }}
-                />
-                <img
-                  src={product2}
-                  alt="Product 2"
-                  className="mx-2"
-                  style={{ width: "33%", height: "250px", objectFit: "cover" }}
-                />
-                <img
-                  src={product3}
-                  alt="Product 3"
-                  className="mx-2"
-                  style={{ width: "33%", height: "250px", objectFit: "cover" }}
-                />
+            {slides.map((group, slideIdx) => (
+              <div
+                key={`slide-${slideIdx}`}
+                className={`carousel-item ${slideIdx === 0 ? "active" : ""}`}
+              >
+                <div className="d-flex justify-content-center">
+                  {group.map((p, i) => {
+                    const src = normalizeImgPath(p.img_path);
+                    return (
+                      <img
+                        key={`${p.id ?? p.name}-${i}`}
+                        src={src || "/assets/img/placeholder.jpg"}
+                        alt={p.name}
+                        className="mx-2"
+                        style={{ width: "33%", height: "250px", objectFit: "cover", display: "block" }}
+                        loading="lazy"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null; // evita loop
+                          e.currentTarget.src = "/assets/img/placeholder.jpg";
+                        }}
+                      />
+                    );
+                  })}
+                  
+                  {group.length < 3 &&
+                    Array.from({ length: 3 - group.length }).map((_, k) => (
+                      <img
+                        key={`filler-${slideIdx}-${k}`}
+                        src="/assets/img/placeholder.jpg"
+                        alt="Filler"
+                        className="mx-2"
+                        style={{ width: "33%", height: "250px", objectFit: "cover", display: "block" }}
+                        loading="lazy"
+                      />
+                    ))}
+                </div>
               </div>
-            </div>
-
-            {/* Segundo grupo de 3 imágenes */}
-            <div className="carousel-item">
-              <div className="d-flex justify-content-center">
-                <img
-                  src={product2}
-                  alt="Product 2"
-                  className="mx-2"
-                  style={{ width: "33%", height: "250px", objectFit: "cover" }}
-                />
-                <img
-                  src={product3}
-                  alt="Product 3"
-                  className="mx-2"
-                  style={{ width: "33%", height: "250px", objectFit: "cover" }}
-                />
-                <img
-                  src={product4}
-                  alt="Product 4"
-                  className="mx-2"
-                  style={{ width: "33%", height: "250px", objectFit: "cover" }}
-                />
-              </div>
-            </div>
+            ))}
           </div>
 
           {/* Flechas */}
           <button
             className="carousel-control-prev"
             type="button"
-            data-bs-target="#carouselExampleControls"
+            data-bs-target="#carouselProducts"
             data-bs-slide="prev"
           >
             <span className="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -91,33 +107,35 @@ export const Home = () => {
           <button
             className="carousel-control-next"
             type="button"
-            data-bs-target="#carouselExampleControls"
+            data-bs-target="#carouselProducts"
             data-bs-slide="next"
           >
             <span className="carousel-control-next-icon" aria-hidden="true"></span>
             <span className="visually-hidden">Siguiente</span>
           </button>
         </div>
-      </div>
+      )}
 
       {/* Secciones debajo del carrusel */}
       <div className="row mt-5 text-center">
         <div className="col-md-6 mb-4">
           <h2>Nosotros</h2>
           <img
-            src={nosotrosImg}
+            src="/assets/img/nosotros.jpg"
             alt="Nosotros"
             className="img-fluid rounded"
-            style={{ maxHeight: "250px", objectFit: "cover" }}
+            style={{ maxHeight: 250, objectFit: "cover" }}
+            loading="lazy"
           />
         </div>
         <div className="col-md-6 mb-4">
           <h2>Artistas</h2>
           <img
-            src={artistasImg}
+            src="/assets/img/artistas.jpg"
             alt="Artistas"
             className="img-fluid rounded"
-            style={{ maxHeight: "250px", objectFit: "cover" }}
+            style={{ maxHeight: 250, objectFit: "cover" }}
+            loading="lazy"
           />
         </div>
       </div>
