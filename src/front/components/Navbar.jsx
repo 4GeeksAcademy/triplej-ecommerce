@@ -90,7 +90,7 @@ export const Navbar = () => {
             <Link to="/cart" className="text-success fs-5">
               <i className="fa-solid fa-cart-shopping"></i>
             </Link>
-            <Link to="/account" className="text-primary fs-5">
+            <Link to="/login" className="text-primary fs-5">
               <i className="fa-solid fa-user"></i>
             </Link>
           </div>
