@@ -57,7 +57,8 @@ class User(db.Model):
     email: Mapped[str] = mapped_column(
         String(120), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String(120), nullable=False)
-    rol: Mapped[RoleEnum] = mapped_column(Enum(RoleEnum, name="roleenum"), nullable=False)
+    rol: Mapped[RoleEnum] = mapped_column(
+        Enum(RoleEnum, name="roleenum"), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -70,7 +71,6 @@ class User(db.Model):
         secondary="user_product", back_populates="artist")
     favorites: Mapped[list['Favorite']] = relationship(
         secondary="user_fav", back_populates="users")
-    """ items = relationship("OrderItem", back_populates="users") """
 
     def serialize(self):
         return {
@@ -96,7 +96,8 @@ class Product(db.Model):
     artist_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("user.id"), nullable=False)
     name: Mapped[str] = mapped_column(String(120), nullable=False)
-    category: Mapped[str] = mapped_column(Enum(CategoryEnum, name="categoryenum"), nullable=False)
+    category: Mapped[str] = mapped_column(
+        Enum(CategoryEnum, name="categoryenum"), nullable=False)
     details: Mapped[str] = mapped_column(String(1000), nullable=False)
     amount: Mapped[int] = mapped_column(Integer, nullable=False)
     price: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -112,7 +113,6 @@ class Product(db.Model):
     artist: Mapped["User"] = relationship(back_populates="products")
     orders: Mapped[list["Order"]] = relationship(
         secondary="prod_order", back_populates="products")
-
 
     def serialize(self):
         return {
@@ -132,10 +132,6 @@ class Product(db.Model):
 class Favorite(db.Model):
     id: Mapped[int] = mapped_column(
         Integer, primary_key=True, autoincrement=True)
-    prod_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("product.id"), nullable=False)
-    user_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("user.id"), nullable=False)
 
     users: Mapped[list["User"]] = relationship(
         secondary="user_fav", back_populates="favorites")
@@ -144,43 +140,35 @@ class Favorite(db.Model):
 
     def serialize(self):
         return {
-            "id": self.id,
-            "prod_id": self.prod_id,
-            "user_id": self.user_id,
+            "id": self.id
         }
 
 
 class Order(db.Model):
     id: Mapped[int] = mapped_column(
         Integer, primary_key=True, autoincrement=True)
-    prod_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("product.id"), nullable=False)
-    user_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("user.id"), nullable=False)
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
 
     users: Mapped[list['User']] = relationship(
         secondary="user_order", back_populates="orders")
     products: Mapped[list['Product']] = relationship(
         secondary="prod_order", back_populates="orders")
-    """ items: Mapped[list['Order']] = relationship(
-        "OrderItem", back_populates="order", cascade="all") """
+    items: Mapped[list['OrderItem']] = relationship(back_populates="order")
 
     def serialize(self):
         return {
             "id": self.id,
-            "prod_id": self.prod_id,
-            "user_id": self.user_id,
             "quantity": self.quantity
         }
 
 
-""" class OrderItem(db.Model):
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    order_id: Mapped[int] = mapped_column(Integer, ForeignKey("order.id"), nullable=False)
-    product_id: Mapped[int] = mapped_column(Integer, ForeignKey("product.id"), nullable=False)
+class OrderItem(db.Model):
+    id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, autoincrement=True)
+    order_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("order.id"), nullable=False)
+    product_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("product.id"), nullable=False)
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
-    price: Mapped[int] = mapped_column(Integer, nullable=False) 
 
-    order = relationship("Order", back_populates="items", cascade="all")
-    product = relationship("Product", back_populates="order_items") """
+    order: Mapped['Order'] = relationship(back_populates="items")
