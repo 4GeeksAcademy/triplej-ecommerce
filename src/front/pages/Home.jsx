@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import "./Home.css";
 
 // Agrupa en chunks de tamaño `size`: [a,b,c,d,e,f] -> [[a,b,c],[d,e,f]]
 const chunk = (arr, size) =>
@@ -17,6 +18,8 @@ export const Home = () => {
   const [all_products, setAllProducts] = useState([]);
   const [status, setStatus] = useState("idle");  // idle | loading | error
   const [error, setError] = useState("");
+  const [flipped, setFlipped] = useState(false);
+  const [flippedArtist, setFlippedArtist] = useState(false); 
 
   useEffect(() => {
     const load = async () => {
@@ -119,24 +122,68 @@ export const Home = () => {
       {/* Secciones debajo del carrusel */}
       <div className="row mt-5 text-center">
         <div className="col-md-6 mb-4">
-          <h2>Nosotros</h2>
-          <img
-            src="/assets/img/nosotros.jpg"
-            alt="Nosotros"
-            className="img-fluid rounded"
-            style={{ maxHeight: 250, objectFit: "cover" }}
-            loading="lazy"
-          />
+      <h2>Nosotros</h2>
+        <div
+          className={`flip-card ${flipped ? "flipped" : ""}`}
+          onClick={() => setFlipped(!flipped)}
+        >
+          <div className="flip-card-inner">
+            {/* Frente */}
+            <div className="flip-card-front">
+                <img
+                  src="/assets/img/nosotros.jpg"
+                  alt="Nosotros"
+                  className="img-fluid rounded"
+                  style={{ maxHeight: 250, objectFit: "cover" }}
+                  loading="lazy"
+                />
+            </div>
+
+              {/* Reverso */}
+              <div className="flip-card-back">
+                <p>
+                  Somos un grupo de Artistas emprenderores apasionados por el arte y la creatividad.  
+                  Trabajamos para ofrecer productos únicos y llenos de inspiración.
+                  Es un nuevo comienzo nuestro arte es unico
+                </p>
+              </div>
+          </div>
         </div>
+        <p className="mt-2 text-muted">Haz clic para girar</p>
+      </div>
         <div className="col-md-6 mb-4">
           <h2>Artistas</h2>
-          <img
-            src="/assets/img/artistas.jpg"
-            alt="Artistas"
-            className="img-fluid rounded"
-            style={{ maxHeight: 250, objectFit: "cover" }}
-            loading="lazy"
-          />
+          <div
+            className={`flip-card ${flippedArtist ? "flipped" : ""}`}
+            onClick={() => setFlippedArtist(!flippedArtist)}
+            >
+            <div className="flip-card-inner">
+              {/* Frente */}
+              <div className="flip-card-front">
+                <img
+                  src="/assets/img/artistas.jpg"
+                  alt="Artistas"
+                  className="img-fluid rounded"
+                  style={{ maxHeight: 250, objectFit: "cover" }}
+                  loading="lazy"
+                />
+              </div>
+
+              {/* Reverso */}
+              <div className="flip-card-back text-start">
+                <p>
+                  <strong>Julia Navarro</strong> — especialidad: escultura, pintura, fotografía.
+                </p>
+                <p>
+                  <strong>Joaquín E. Rivero Delgado</strong> — especialidad: pintura, escultura.
+                </p>
+                <p>
+                  <strong>José Rey</strong> — especialidad: arte digital, fotografía.
+                </p>
+              </div>
+            </div>
+          </div>
+          <p className="mt-2 text-muted">Haz clic para girar</p>
         </div>
       </div>
     </div>

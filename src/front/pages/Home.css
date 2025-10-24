@@ -1,0 +1,66 @@
+.flip-card {
+  perspective: 1000px;
+  width: 80%;
+  max-width: 400px;
+  cursor: pointer;
+  margin: 0 auto;
+}
+
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 250px;
+  transition: transform 0.8s;
+  transform-style: preserve-3d;
+}
+
+.flip-card.flipped .flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-card-front,
+.flip-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.flip-card-back {
+  background-color: #f8f9fa;
+  color: #333;
+  transform: rotateY(180deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  font-size: 1rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* Estilos generales del reverso de las tarjetas */
+.flip-card-back {
+  display: flex;
+  flex-direction: column;     /* organiza los párrafos uno debajo del otro */
+  justify-content: center;    /* centra verticalmente */
+  align-items: flex-start;    /* los alinea a la izquierda */
+  text-align: left;           /* asegura texto alineado */
+  padding: 1.5rem;
+  gap: 0.5rem;                /* espacio entre párrafos (más moderno que margin-bottom) */
+  background-color: #f8f9fa;
+  color: #333;
+  transform: rotateY(180deg);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Estilo específico de los párrafos dentro del reverso */
+.flip-card-back p {
+  margin: 0;                  /* elimina márgenes externos de Bootstrap */
+  line-height: 1.4;
+}
+
+
+
