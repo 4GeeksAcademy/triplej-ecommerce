@@ -17,6 +17,11 @@ export default ({ mode }) => {
           changeOrigin: true,
           secure: false, // Codespaces usa HTTPS con cert autofirmado
         },
+        "/my-cart": {
+          target: backend,
+          changeOrigin: true,
+          secure: false,
+        }
         // Si más tarde expones /api/*:
         // "/api": { target: backend, changeOrigin: true, secure: false },
       },

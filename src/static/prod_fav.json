@@ -1,0 +1,26 @@
+[
+  {
+    "prod_id": 2,
+    "fav_id": 1
+  },
+  {
+    "prod_id": 3,
+    "fav_id": 2
+  },
+  {
+    "prod_id": 3,
+    "fav_id": 3
+  },
+  {
+    "prod_id": 1,
+    "fav_id": 4
+  },
+  {
+    "prod_id": 2,
+    "fav_id": 5
+  },
+  {
+    "prod_id": 3,
+    "fav_is": 6
+  }
+]
