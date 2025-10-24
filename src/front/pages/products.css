@@ -6,10 +6,19 @@
   --muted:#6b7280;
   --brand:#111;
   --accent:#111;
+
+  /* Sidebar desktop */
+  --sidebar-w:220px;          /* expandido */
+  --sidebar-w-collapsed:8px;  /* contraído = línea */
+
+  /* Componentes */
   --r-sm:10px;
   --r-md:14px;
   --r-lg:16px;
   --gap:16px;
+
+  /* Favoritos */
+  --heart-active:#e02424;
 }
 
 *{ box-sizing:border-box }
@@ -28,23 +37,20 @@ body{
   display:grid;
   gap:var(--gap);
   padding:var(--gap);
-  grid-template-columns:260px 1fr;
+  grid-template-columns:var(--sidebar-w) 1fr;
 }
-
-/* Colapsado de sidebar en desktop */
 .content.sidebar-collapsed{
-  grid-template-columns:72px 1fr;
+  grid-template-columns:var(--sidebar-w-collapsed) 1fr;
 }
 
 /* ---------- Sidebar ---------- */
 .sidebar{
   position:relative;
-  overflow: visible;
   background:#fff;
   border:1px solid var(--line);
   border-radius:var(--r-md);
   padding:16px;
-  transition:padding .2s ease, width .2s ease, transform .2s ease;
+  transition:padding .2s ease, transform .2s ease, background .2s ease, border-color .2s ease;
 }
 .sidebar h4{ margin:10px 0 }
 .sidebar-title{ margin-top:20px; color:var(--muted); font-weight:600 }
@@ -54,33 +60,30 @@ body{
 .radio input{ accent-color:var(--accent) }
 .radio .label{ text-transform:capitalize }
 
-/* Contenido ocultable al colapsar */
-.sidebar.collapsed{ padding:16px 8px; }
+/* Colapsado = línea negra */
+.sidebar.collapsed{
+  padding:0;
+  background:white;
+  border-color:white;
+  border-radius:var(--r-md);
+}
 .sidebar.collapsed .sidebar-content{ display:none; }
 
-/* Botón flecha expandir/contraer (desktop) */
+/* Flecha expandir/contraer (desktop) */
 .sidebar-toggle{
-  position:absolute;
-  top:50%;
-  right: -12px;
-  transform:translateY(-50%);
+  position:absolute; top:12px; right:-12px;
   width:28px; height:28px;
   display:grid; place-items:center;
   border:1px solid var(--line);
   background:#fff; border-radius:50%;
   box-shadow:0 2px 8px rgba(0,0,0,.08);
-  cursor:pointer; z-index:5;
-  z-index: 2001;
+  cursor:pointer; z-index:2001;
 }
-.sidebar-toggle svg{
-  width:16px; height:16px;
-  transition:transform .2s ease;
-  color:var(--text);
-}
+.sidebar-toggle svg{ width:16px; height:16px; transition:transform .2s ease; color:var(--text) }
 .chev.left { transform:rotate(0deg); }
 .chev.right{ transform:rotate(180deg); }
 
-/* Botón cerrar (solo móvil, se activa en @media) */
+/* Cerrar (móvil) */
 .sidebar-close{
   display:none;
   position:absolute; top:10px; right:12px;
@@ -97,7 +100,6 @@ body{
   grid-template-columns:repeat(3, minmax(0, 1fr));
 }
 
-/* Card: imagen arriba + info con fondo blanco */
 .card{
   display:grid;
   grid-template-rows:220px auto;
@@ -131,11 +133,16 @@ body{
 .cat{ color:var(--muted); }
 .price{ font-weight:700 }
 
-/* Botón pequeño abajo a la derecha */
+/* Acciones: corazón a la izquierda del botón Añadir */
 .actions{
   margin-top:auto;
-  display:flex; justify-content:flex-end;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:8px;
 }
+
+/* Botón Añadir */
 .mini-btn{
   padding:6px 10px;
   font-size:12px;
@@ -178,25 +185,48 @@ body{
   .card{ grid-template-rows:200px auto }
 }
 
-/* Off-canvas sidebar en ≤992px */
+/* Off-canvas ≤992px */
 @media (max-width:992px){
-  .content{ grid-template-columns:1fr }   /* apila */
+  .content{ grid-template-columns:1fr }
   .filters-bar{ display:block }
   .only-mobile{ display:inline-grid }
 
   .sidebar{
-    position:fixed; inset:0 auto 0 0;   /* top:0;left:0;bottom:0 */
+    position:fixed; inset:0 auto 0 0;
     width:82%; max-width:340px; height:100dvh; overflow-y:auto;
     transform:translateX(-110%); z-index:1040;
     border-radius:0 var(--r-md) var(--r-md) 0;
+    background:#fff; border:1px solid var(--line);
+    padding:16px;
   }
   .sidebar.open{ transform:translateX(0) }
   .sidebar-close{ display:inline-grid; place-items:center }
-  .sidebar-toggle{ display:none }         /* ocultar flecha en móvil */
+  .sidebar-toggle{ display:none } /* ocultar flecha en móvil */
 }
 
 /* Móvil pequeño */
 @media (max-width:520px){
   .grid{ grid-template-columns:1fr }
   .card{ grid-template-rows:180px auto }
+}
+
+/* ---------- Favoritos (Font Awesome) ---------- */
+/* En línea dentro de .actions */
+.heart-btn{
+  position:static;
+  width:34px; height:34px;
+  display:grid; place-items:center;
+  border:1.5px solid var(--text);
+  border-radius:50%;
+  background:#fff; color:var(--text);
+  cursor:pointer;
+  transition:opacity .2s ease, transform .05s ease, background .2s ease, border-color .2s ease, color .2s ease;
+}
+.heart-btn:hover{ opacity:.85 }
+.heart-btn:active{ transform:scale(.98) }
+.heart-btn i{ font-size:16px; line-height:1 }
+.heart-btn.active{
+  background:var(--heart-active);
+  border-color:var(--heart-active);
+  color:#fff;
 }
