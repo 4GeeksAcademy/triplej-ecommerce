@@ -1,4 +1,5 @@
 from flask import jsonify, url_for
+import sys
 
 class APIException(Exception):
     status_code = 400
@@ -39,3 +40,6 @@ def generate_sitemap(app):
         <p>Start working on your project by following the <a href="https://start.4geeksacademy.com/starters/full-stack" target="_blank">Quick Start</a></p>
         <p>Remember to specify a real endpoint path like: </p>
         <ul style="text-align: left;">"""+links_html+"</ul></div>"
+
+def print_stderr(string):
+    print(string, file=sys.stderr)

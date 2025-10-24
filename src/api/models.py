@@ -14,6 +14,13 @@ user_order = Table(
     Column("order_id", ForeignKey("order.id")),
 )
 
+prod_order = Table(
+    "prod_order",
+    db.metadata,
+    Column("prod_id", ForeignKey("product.id")),
+    Column("order_id", ForeignKey("order.id")),
+)
+
 user_product = Table(
     "user_product",
     db.metadata,
@@ -35,12 +42,6 @@ prod_fav = Table(
     Column("fav_id", ForeignKey("favorite.id")),
 )
 
-prod_order = Table(
-    "prod_order",
-    db.metadata,
-    Column("prod_id", ForeignKey("product.id")),
-    Column("order_id", ForeignKey("order.id")),
-)
 
 
 class RoleEnum(enum.Enum):
@@ -85,7 +86,7 @@ class User(db.Model):
 
 
 class CategoryEnum(enum.Enum):
-    HOME_DECORATION = "home_decoration"
+    LAMPS = "lamps"
     SCULPTURES = "sculptures"
     STATUE = "statue"
 
@@ -113,6 +114,7 @@ class Product(db.Model):
     artist: Mapped["User"] = relationship(back_populates="products")
     orders: Mapped[list["Order"]] = relationship(
         secondary="prod_order", back_populates="products")
+    item: Mapped['OrderItem'] = relationship(back_populates="product")
 
     def serialize(self):
         return {
@@ -147,7 +149,6 @@ class Favorite(db.Model):
 class Order(db.Model):
     id: Mapped[int] = mapped_column(
         Integer, primary_key=True, autoincrement=True)
-    quantity: Mapped[int] = mapped_column(Integer, nullable=False)
 
     users: Mapped[list['User']] = relationship(
         secondary="user_order", back_populates="orders")
@@ -158,7 +159,6 @@ class Order(db.Model):
     def serialize(self):
         return {
             "id": self.id,
-            "quantity": self.quantity
         }
 
 
@@ -167,8 +167,17 @@ class OrderItem(db.Model):
         Integer, primary_key=True, autoincrement=True)
     order_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("order.id"), nullable=False)
-    product_id: Mapped[int] = mapped_column(
+    prod_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("product.id"), nullable=False)
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
 
     order: Mapped['Order'] = relationship(back_populates="items")
+    product: Mapped['Product'] = relationship(back_populates="item")
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "order_id": self.order_id,
+            "prod_id": self.prod_id,
+            "quantity": self.quantity,
+        }
