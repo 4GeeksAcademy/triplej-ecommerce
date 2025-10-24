@@ -1,1 +1,13 @@
 .navbar {background-color: #BC9ECC !important;}
+
+.w-45 {
+    width: 45% !important;
+}
+
+.w-100px {
+    width: 200px !important;
+}
+
+.object-position-center {
+    object-position: center !important;
+}

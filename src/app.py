@@ -5,12 +5,13 @@ import os
 from flask import Flask, request, jsonify, url_for, send_from_directory, abort
 from flask_migrate import Migrate
 from flask_swagger import swagger
-from api.utils import APIException, generate_sitemap
-from api.models import db, Product, User, Order, Favorite
+from api.utils import APIException, generate_sitemap, print_stderr
+from api.models import db, Product, User, Order, Favorite, OrderItem, prod_order, user_order
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
-from sqlalchemy import text
+from sqlalchemy import text, func
+import sys
 
 # from models import Person
 
@@ -69,32 +70,20 @@ def serve_any_other_file(path):
     return response
 
 
-"""
-    firstname: Mapped[str] = mapped_column(String(120), nullable=False)
-    lastname: Mapped[str] = mapped_column(String(120), nullable=False)
-    email: Mapped[str] = mapped_column(
-        String(120), unique=True, nullable=False)
-    password: Mapped[str] = mapped_column(String(120), nullable=False)
-    rol: Mapped[RoleEnum] = mapped_column(Enum(RoleEnum), nullable=False)
-    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc),
-        nullable=False)
-"""
-
 @app.route('/users', methods=['GET'])
 def get_users():
     try:
         users = db.session.execute(db.select(User)).scalars().all()
         print("all users: ", users)
-        if not users: abort(404, description="User not found")
+        if not users:
+            abort(404, description="User not found")
         result = [user.serialize() for user in users]
         return jsonify(result), 200
-    
+
     except Exception as e:
         raise APIException(str(e), status_code=500)
-    
+
+
 @app.route('/users', methods=['POST'])
 def add_users():
     try:
@@ -126,10 +115,81 @@ def add_products():
         serialized_prods = [prod.serialize() for prod in new_prods]
 
         return jsonify(serialized_prods), 201
-    
+
     except Exception as e:
         db.session.rollback()
         raise APIException(str(e), status_code=500)
+
+
+@app.route('/orders', methods=['GET'])
+def get_all_orders():
+    try:
+        orders = db.session.execute(db.select(Order)).scalars().all()
+        print("all users: ", orders)
+        if not orders:
+            abort(404, description="User not found")
+        result = [order.serialize() for order in orders]
+        return jsonify(result), 200
+
+    except Exception as e:
+        raise APIException(str(e), status_code=500)
+
+
+@app.route('/my-cart', methods=['GET'])
+def get_orders():
+    try:
+        results = db.session.execute(
+            db.select(Order, User, Product, OrderItem)
+            .join(Order.users)
+            .where(User.id == 2)
+            .join(Order.products)
+            .join(Order.items)).all()
+
+        orders_dict = {}
+        for order, _, prod, order_item in results:
+
+            if order.id not in orders_dict:
+                order_info = order.serialize()
+                order_info['products'] = []
+                orders_dict[order.id] = order_info
+
+            if any(p["product_details"]["id"] == prod.id for p in orders_dict[order.id]["products"]):
+                continue
+
+            orders_dict[order.id]['products'].append({
+                "item_id": order_item.id,
+                "quantity_ordered": order_item.quantity,
+                "product_details": prod.serialize()
+            })
+
+        list_orders = list(orders_dict.values())
+
+        return list_orders, 200
+    except Exception as e:
+        raise APIException(str(e), status_code=500)
+    
+@app.route('/my-cart/<prod_id>', methods=['DELETE'])
+def delete_prod_from_cart(prod_id):
+    try:
+        order_item = db.session.execute(db.select(OrderItem).where(OrderItem.prod_id == prod_id)).scalar_one_or_none() 
+        if order_item is None: abort(404, f'OrderItem does not have a record with prod_id = {prod_id}.')
+
+        count = db.session.execute(db.select(func.count(OrderItem.order_id)).where(OrderItem.order_id == order_item.order_id))
+        print_stderr(count.scalar_one_or_none())
+        if count == 1: 
+            order = db.session.execute(db.select(Order).where(Order.id == order_item.order_id)).scalar_one_or_none()
+            if order is None: abort(404, f'Order does not have a record with id = ${order_item.order_id}')
+            db.session.remove(order_item)        
+            db.session.remove(order)   
+            db.session.commit()     
+        else:
+            db.session.delete(order_item)
+            db.session.commit()
+
+        return jsonify({"message":"Delete completed!"}), 200
+    except Exception as e:
+        raise APIException(str(e), status_code=500)
+
 
 @app.route('/orders', methods=['POST'])
 def add_orders():
@@ -144,11 +204,91 @@ def add_orders():
         serialized_orders = [order.serialize() for order in new_orders]
 
         return jsonify(serialized_orders), 201
-    
+
     except Exception as e:
         db.session.rollback()
         raise APIException(str(e), status_code=500)
-    
+
+
+@app.route('/order_items', methods=['GET'])
+def get_order_items():
+    try:
+        items = db.session.execute(db.select(OrderItem)).scalars().all()
+        print_stderr(f"all users: ${items}")
+        if not items:
+            abort(404, description="Item not found")
+        result = [item.serialize() for item in items]
+        return jsonify(result), 200
+
+    except Exception as e:
+        raise APIException(str(e), status_code=500)
+
+
+@app.route('/order_items', methods=['POST'])
+def add_order_items():
+    try:
+        items = request.get_json()
+        print("Request body: ", items)
+        new_items = [OrderItem(**item) for item in items]
+
+        db.session.add_all(new_items)
+        db.session.commit()
+
+        serialized_items = [item.serialize() for item in new_items]
+
+        return jsonify(serialized_items), 201
+
+    except Exception as e:
+        db.session.rollback()
+        raise APIException(str(e), status_code=500)
+
+
+@app.route('/prod_order', methods=['POST'])
+def add_prod_orders():
+    try:
+        prod_orders = request.get_json()
+        print("Request body: ", prod_orders)
+
+        for row in prod_orders:
+            order = db.session.get(Order, row["order_id"])
+            product = db.session.get(Product, row["prod_id"])
+            if not order or not product:
+                abort(404, description="Item not found")
+
+            order.products.append(product)
+
+        db.session.commit()
+
+        return "prod_order filled successfully.", 201
+
+    except Exception as e:
+        db.session.rollback()
+        raise APIException(str(e), status_code=500)
+
+
+@app.route('/user_order', methods=['POST'])
+def add_user_orders():
+    try:
+        user_orders = request.get_json()
+        print("Request body: ", user_orders)
+
+        for row in user_orders:
+            order = db.session.get(Order, row["order_id"])
+            user = db.session.get(User, row["user_id"])
+            if not order or not user:
+                abort(404, description="Item not found")
+
+            order.users.append(user)
+
+        db.session.commit()
+
+        return "user_order filled successfully.", 201
+
+    except Exception as e:
+        db.session.rollback()
+        raise APIException(str(e), status_code=500)
+
+
 @app.route('/favorites', methods=['POST'])
 def add_favorites():
     try:
@@ -162,7 +302,7 @@ def add_favorites():
         serialized_favorites = [fav.serialize() for fav in new_favorites]
 
         return jsonify(serialized_favorites), 201
-    
+
     except Exception as e:
         db.session.rollback()
         raise APIException(str(e), status_code=500)
