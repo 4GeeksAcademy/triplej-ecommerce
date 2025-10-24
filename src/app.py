@@ -316,8 +316,24 @@ def get_products():
     except Exception as e:
         raise APIException(str(e), status_code=500)
 
+@app.route('/products/<int:id>', methods=['GET'])
+def get_product_by_id(id):
+    try:
+        # Buscar el producto por su ID (clave primaria)
+        product = db.session.get(Product, id)
+
+        # Si no existe, devolver error 404
+        if not product:
+            abort(404, description=f"Product with id {id} not found")
+
+        # Si existe, devolver el producto serializado
+        return jsonify(product.serialize()), 200
+
+    except Exception as e:
+        raise APIException(str(e), status_code=500)
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3001))
     app.run(host='0.0.0.0', port=PORT, debug=True)
+
