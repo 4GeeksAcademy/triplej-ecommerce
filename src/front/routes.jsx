@@ -12,7 +12,9 @@ import { Demo } from "./pages/Demo";
 import Products from "./pages/Products";
 import { Cart } from "./pages/Cart";
 import Login from "./pages/Login";
-import Register from "./pages/Register"
+import Register from "./pages/Register";
+import IndividualProduct from "./pages/IndividualProduct";
+
 
 export const router = createBrowserRouter(
     createRoutesFromElements(
@@ -33,6 +35,7 @@ export const router = createBrowserRouter(
         <Route path="/demo" element={<Demo />} />
         <Route path="/login" element={<Login />} /> {/* Login */}
         <Route path="/register" element={<Register />} /> {/* Register */}
+        <Route path="product/:id" element={<IndividualProduct />} />
       </Route>
     )
 );

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Home.css";
 
 // Agrupa en chunks de tamaño `size`: [a,b,c,d,e,f] -> [[a,b,c],[d,e,f]]
@@ -16,10 +17,12 @@ const normalizeImgPath = (path) => {
 
 export const Home = () => {
   const [all_products, setAllProducts] = useState([]);
-  const [status, setStatus] = useState("idle");  // idle | loading | error
+  const [status, setStatus] = useState("idle"); // idle | loading | error
   const [error, setError] = useState("");
   const [flipped, setFlipped] = useState(false);
-  const [flippedArtist, setFlippedArtist] = useState(false); 
+  const [flippedArtist, setFlippedArtist] = useState(false);
+
+  const navigate = useNavigate(); // 👈 ya lo tienes
 
   useEffect(() => {
     const load = async () => {
@@ -71,8 +74,15 @@ export const Home = () => {
                         src={src || "/assets/img/placeholder.jpg"}
                         alt={p.name}
                         className="mx-2"
-                        style={{ width: "33%", height: "250px", objectFit: "cover", display: "block" }}
+                        style={{
+                          width: "33%",
+                          height: "250px",
+                          objectFit: "cover",
+                          display: "block",
+                          cursor: "pointer", // 👈 para indicar clic
+                        }}
                         loading="lazy"
+                        onClick={() => navigate(`/product/${p.id}`)} // 👈 navega al producto individual
                         onError={(e) => {
                           e.currentTarget.onerror = null; // evita loop
                           e.currentTarget.src = "/assets/img/placeholder.jpg";
@@ -80,7 +90,8 @@ export const Home = () => {
                       />
                     );
                   })}
-                  
+
+                  {/* Rellena huecos si faltan imágenes */}
                   {group.length < 3 &&
                     Array.from({ length: 3 - group.length }).map((_, k) => (
                       <img
@@ -88,7 +99,12 @@ export const Home = () => {
                         src="/assets/img/placeholder.jpg"
                         alt="Filler"
                         className="mx-2"
-                        style={{ width: "33%", height: "250px", objectFit: "cover", display: "block" }}
+                        style={{
+                          width: "33%",
+                          height: "250px",
+                          objectFit: "cover",
+                          display: "block",
+                        }}
                         loading="lazy"
                       />
                     ))}
@@ -97,7 +113,7 @@ export const Home = () => {
             ))}
           </div>
 
-          {/* Flechas */}
+          {/* Flechas del carrusel */}
           <button
             className="carousel-control-prev"
             type="button"
@@ -122,14 +138,14 @@ export const Home = () => {
       {/* Secciones debajo del carrusel */}
       <div className="row mt-5 text-center">
         <div className="col-md-6 mb-4">
-      <h2>Nosotros</h2>
-        <div
-          className={`flip-card ${flipped ? "flipped" : ""}`}
-          onClick={() => setFlipped(!flipped)}
-        >
-          <div className="flip-card-inner">
-            {/* Frente */}
-            <div className="flip-card-front">
+          <h2>Nosotros</h2>
+          <div
+            className={`flip-card ${flipped ? "flipped" : ""}`}
+            onClick={() => setFlipped(!flipped)}
+          >
+            <div className="flip-card-inner">
+              {/* Frente */}
+              <div className="flip-card-front">
                 <img
                   src="/assets/img/nosotros.jpg"
                   alt="Nosotros"
@@ -137,26 +153,27 @@ export const Home = () => {
                   style={{ maxHeight: 250, objectFit: "cover" }}
                   loading="lazy"
                 />
-            </div>
+              </div>
 
               {/* Reverso */}
               <div className="flip-card-back">
                 <p>
-                  Somos un grupo de Artistas emprenderores apasionados por el arte y la creatividad.  
-                  Trabajamos para ofrecer productos únicos y llenos de inspiración.
-                  Es un nuevo comienzo nuestro arte es unico
+                  Somos un grupo de Artistas emprendedores apasionados por el arte y la
+                  creatividad. Trabajamos para ofrecer productos únicos y llenos de
+                  inspiración. Es un nuevo comienzo: nuestro arte es único.
                 </p>
               </div>
+            </div>
           </div>
+          <p className="mt-2 text-muted">Haz clic para girar</p>
         </div>
-        <p className="mt-2 text-muted">Haz clic para girar</p>
-      </div>
+
         <div className="col-md-6 mb-4">
           <h2>Artistas</h2>
           <div
             className={`flip-card ${flippedArtist ? "flipped" : ""}`}
             onClick={() => setFlippedArtist(!flippedArtist)}
-            >
+          >
             <div className="flip-card-inner">
               {/* Frente */}
               <div className="flip-card-front">
@@ -172,10 +189,12 @@ export const Home = () => {
               {/* Reverso */}
               <div className="flip-card-back text-start">
                 <p>
-                  <strong>Julia Navarro</strong> — especialidad: escultura, pintura, fotografía.
+                  <strong>Julia Navio</strong> — especialidad: escultura, pintura,
+                  fotografía.
                 </p>
                 <p>
-                  <strong>Joaquín E. Rivero Delgado</strong> — especialidad: pintura, escultura.
+                  <strong>Joaquín E. Rivero Delgado</strong> — especialidad: pintura,
+                  escultura.
                 </p>
                 <p>
                   <strong>José Rey</strong> — especialidad: arte digital, fotografía.
