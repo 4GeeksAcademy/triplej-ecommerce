@@ -17,23 +17,29 @@ const Login = () => {
     e.preventDefault();
     setError("");
 
-    // Validación simple
     if (!form.user || !form.password) {
       setError("Por favor, completa todos los campos.");
       return;
     }
 
     try {
-      // Aquí podrías hacer tu petición al backend:
-      // const res = await fetch("/login", { ... });
-      // const data = await res.json();
-      // if (!res.ok) throw new Error(data.message);
+      const res = await fetch("/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: form.user,
+          password: form.password,
+        }),
+      });
 
-      console.log("Usuario:", form.user, "Contraseña:", form.password);
+      const data = await res.json();
 
-      // Simulación de login exitoso
-      navigate("/"); // redirige al home o dashboard
+      if (!res.ok) throw new Error(data.msg || "Error de login");
+
+      sessionStorage.setItem("token", data.token);
+      navigate("/private");
     } catch (err) {
+      console.error(err);
       setError("Error al iniciar sesión. Intenta de nuevo.");
     }
   };

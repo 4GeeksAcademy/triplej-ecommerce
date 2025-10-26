@@ -1,6 +1,9 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const Register = () => {
+  const navigate = useNavigate();
+
   const [form, setForm] = useState({
     nombre: "",
     apellido: "",
@@ -10,8 +13,9 @@ export const Register = () => {
     confirmPassword: "",
   });
 
-  const [status, setStatus] = useState("idle"); // idle | loading | success | error
+  const [status, setStatus] = useState("idle");   // idle | loading | success | error
   const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -20,13 +24,14 @@ export const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setSuccessMsg("");
 
     // Validaciones básicas
-    if (!form.nombre || !form.apellido || !form.direccion || !form.email || !form.password || !form.confirmPassword) {
+    if (!form.nombre || !form.apellido || !form.email || !form.password || !form.confirmPassword) {
       setError("Por favor, completa todos los campos.");
       return;
     }
-
     if (form.password !== form.confirmPassword) {
       setError("Las contraseñas no coinciden.");
       return;
@@ -34,24 +39,33 @@ export const Register = () => {
 
     try {
       setStatus("loading");
-      setError("");
 
-      // Envía al backend
       const res = await fetch("/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        // 👇 Enviamos solo lo necesario. El backend mapea y fija el rol por defecto.
         body: JSON.stringify({
-          nombre: form.nombre,
-          apellido: form.apellido,
-          direccion: form.direccion,
+          firstname: form.nombre,
+          lastname: form.apellido,
           email: form.email,
           password: form.password,
+          // is_active lo puede fijar el backend si quieres; si no, descomenta:
+          // is_active: true,
         }),
       });
 
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      // Si el backend falla y responde HTML, evita el "Unexpected token '<'"
+      const ct = res.headers.get("content-type") || "";
+      const payload = ct.includes("application/json") ? await res.json() : { msg: await res.text() };
+
+      if (!res.ok) {
+        throw new Error(payload?.msg || `HTTP ${res.status}`);
+      }
 
       setStatus("success");
+      setSuccessMsg("¡Usuario registrado correctamente! Redirigiendo al login…");
+
+      // Limpia el formulario
       setForm({
         nombre: "",
         apellido: "",
@@ -60,12 +74,17 @@ export const Register = () => {
         password: "",
         confirmPassword: "",
       });
+
+      // Redirige al login tras 1.5s
+      setTimeout(() => navigate("/login"), 1500);
     } catch (err) {
       console.error("Error en registro:", err);
-      setError("No se pudo registrar el usuario. Inténtalo más tarde.");
+      setError(err.message || "No se pudo registrar el usuario.");
       setStatus("error");
     } finally {
-      setStatus("idle");
+      // No vuelvas a "idle" si quieres mantener visible el mensaje de success/error
+      // Si prefieres, puedes dejarlo en "idle":
+      // setStatus("idle");
     }
   };
 
@@ -74,9 +93,7 @@ export const Register = () => {
       <h2 className="text-center mb-4 fw-bold">Registro de Usuario</h2>
 
       {status === "loading" && <p className="text-center">Enviando datos...</p>}
-      {status === "success" && (
-        <p className="text-success text-center">¡Usuario registrado correctamente!</p>
-      )}
+      {successMsg && <p className="text-success text-center">{successMsg}</p>}
       {error && <p className="text-danger text-center">{error}</p>}
 
       <form onSubmit={handleSubmit}>
@@ -130,6 +147,7 @@ export const Register = () => {
             onChange={handleChange}
             placeholder="********"
             required
+            minLength={6}
           />
         </div>
 
