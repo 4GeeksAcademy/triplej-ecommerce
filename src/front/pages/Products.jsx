@@ -163,7 +163,12 @@ export default function Products() {
               const isFav = favorites.has(p.id);
 
               return (
-                <article className="card" key={p.id ?? p.name}>
+                <article
+                  className="card"
+                  key={p.id ?? p.name}
+                  onClick={() => navigate(`/product/${p.id}`)} // ✅ CORREGIDO
+                  style={{ cursor: "pointer" }}
+                >
                   <div className="thumb">
                     <img
                       src={src || "/assets/img/placeholder.jpg"}
@@ -189,20 +194,33 @@ export default function Products() {
                     </div>
 
                     <div className="actions">
-                      {/* Corazón a la izquierda del botón Añadir */}
+                      {/* ❤️ Botón de favoritos */}
                       <button
                         className={`heart-btn ${isFav ? "active" : ""}`}
-                        onClick={() => toggleFavorite(p.id)}
+                        onClick={(e) => {
+                          e.stopPropagation(); // evita abrir el producto al hacer click
+                          toggleFavorite(p.id);
+                        }}
                         aria-label={
-                          isFav ? "Quitar de favoritos" : "Añadir a favoritos"
+                          isFav
+                            ? "Quitar de favoritos"
+                            : "Añadir a favoritos"
                         }
                       >
-                        <i className={isFav ? "fas fa-heart" : "far fa-heart"}></i>
+                        <i
+                          className={
+                            isFav ? "fas fa-heart" : "far fa-heart"
+                          }
+                        ></i>
                       </button>
 
+                      {/* 🛒 Botón de carrito */}
                       <button
                         className="mini-btn"
-                        onClick={() => alert(`Añadido: ${p.name}`)}
+                        onClick={(e) => {
+                          e.stopPropagation(); // evita navegar al hacer click
+                          alert(`Añadido: ${p.name}`);
+                        }}
                       >
                         Añadir al carrito
                       </button>
