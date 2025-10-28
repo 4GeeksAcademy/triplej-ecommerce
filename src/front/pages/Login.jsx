@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../AuthContext"; // Ruta del contexto
 
 const Login = () => {
-  const navigate = useNavigate();
+  const { login } = useAuth();
+  const navigate = useNavigate(); // Usamos el hook useNavigate en el componente
   const [form, setForm] = useState({ user: "", password: "" });
   const [error, setError] = useState("");
 
@@ -36,8 +38,9 @@ const Login = () => {
 
       if (!res.ok) throw new Error(data.msg || "Error de login");
 
-      sessionStorage.setItem("token", data.token);
-      navigate("/private");
+      login(data.token, data.user); // Usamos la función login del contexto
+      navigate("/private"); // Realizamos la redirección aquí
+
     } catch (err) {
       console.error(err);
       setError("Error al iniciar sesión. Intenta de nuevo.");
@@ -53,9 +56,7 @@ const Login = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
-            <label htmlFor="user" className="form-label">
-              Nombre de usuario o correo electrónico
-            </label>
+            <label htmlFor="user" className="form-label">Nombre de usuario o correo electrónico</label>
             <input
               type="text"
               id="user"
@@ -69,9 +70,7 @@ const Login = () => {
           </div>
 
           <div className="mb-3">
-            <label htmlFor="password" className="form-label">
-              Contraseña
-            </label>
+            <label htmlFor="password" className="form-label">Contraseña</label>
             <input
               type="password"
               id="password"
@@ -84,18 +83,12 @@ const Login = () => {
             />
           </div>
 
-          <button type="submit" className="btn btn-primary w-100">
-            Iniciar sesión
-          </button>
+          <button type="submit" className="btn btn-primary w-100">Iniciar sesión</button>
         </form>
 
         <div className="text-center mt-3">
           <span>¿No tienes cuenta? </span>
-          <button
-            type="button"
-            className="btn btn-link p-0"
-            onClick={() => navigate("/register")}
-          >
+          <button type="button" className="btn btn-link p-0" onClick={() => navigate("/register")}>
             Regístrate
           </button>
         </div>
