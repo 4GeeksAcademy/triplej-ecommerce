@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAuth } from "../AuthContext";
 import "./products.css";
 
 // Normaliza rutas de imágenes
@@ -34,6 +35,7 @@ export default function Products() {
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
   const [disabled, setDisabled] = useState(false);
+  const { currentUser } = useAuth();
 
   const addToCart = (item) => {
     fetch('/my-cart', {
@@ -41,7 +43,7 @@ export default function Products() {
       headers: {
         'Content-type': "application/json"
       },
-      body: JSON.stringify(item),
+      body: JSON.stringify({ item, currentUser }),
     })
       .then(resp => resp.json())
       .then(data => {
@@ -182,7 +184,7 @@ export default function Products() {
                 <article
                   className="card"
                   key={p.id ?? p.name}
-                  onClick={() => navigate(`/product/${p.id}`)} // ✅ CORREGIDO
+                  onClick={() => navigate(`/product/${p.id}`)} 
                   style={{ cursor: "pointer" }}
                 >
                   <div className="thumb">
@@ -210,7 +212,6 @@ export default function Products() {
                     </div>
 
                     <div className="actions">
-                      {/* ❤️ Botón de favoritos */}
                       <button
                         className={`heart-btn ${isFav ? "active" : ""}`}
                         onClick={(e) => {
@@ -230,11 +231,14 @@ export default function Products() {
                         ></i>
                       </button>
 
-                      {/* 🛒 Botón de carrito */}
                       <button
                         className="mini-btn"
-                        onClick={() => addToCart(p)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addToCart(p);
+                        }}
                         disabled={disabled}
+
                       >
                         Añadir al carrito
                       </button>
