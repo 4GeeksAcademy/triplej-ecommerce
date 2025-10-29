@@ -14,7 +14,6 @@ import { Cart } from "./pages/Cart";
 import Login from "./pages/Login";
 import Register from "./pages/Register"
 import { PrivateArea } from "./pages/PrivateArea";
-import Register from "./pages/Register";
 import IndividualProduct from "./pages/IndividualProduct";
 
 
