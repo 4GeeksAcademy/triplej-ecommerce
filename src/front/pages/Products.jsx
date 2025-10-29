@@ -28,11 +28,28 @@ export default function Products() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("todas");
   const [products, setProducts] = useState([]);
-  const [favorites, setFavorites] = useState(new Set()); // ❤️ IDs favoritos
+  const [favorites, setFavorites] = useState(new Set());
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
+  const [disabled, setDisabled] = useState(false);
+
+  const addToCart = (item) => {
+    fetch('/my-cart', {
+      method: "POST",
+      headers: {
+        'Content-type': "application/json"
+      },
+      body: JSON.stringify(item),
+    })
+      .then(resp => resp.json())
+      .then(data => {
+        data.quantity == data.stock && setDisabled(true);
+        console.log("Item added to cart: ", data)
+      })
+      .catch(error => console.log(error));
+  }
 
   // Cargar productos
   useEffect(() => {
@@ -96,9 +113,8 @@ export default function Products() {
       <div className={`content ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}>
         {/* Sidebar */}
         <aside
-          className={`sidebar ${sidebarOpen ? "open" : ""} ${
-            sidebarCollapsed ? "collapsed" : ""
-          }`}
+          className={`sidebar ${sidebarOpen ? "open" : ""} ${sidebarCollapsed ? "collapsed" : ""
+            }`}
         >
           <button
             className="sidebar-toggle"
@@ -217,10 +233,8 @@ export default function Products() {
                       {/* 🛒 Botón de carrito */}
                       <button
                         className="mini-btn"
-                        onClick={(e) => {
-                          e.stopPropagation(); // evita navegar al hacer click
-                          alert(`Añadido: ${p.name}`);
-                        }}
+                        onClick={() => addToCart(p)}
+                        disabled={disabled}
                       >
                         Añadir al carrito
                       </button>

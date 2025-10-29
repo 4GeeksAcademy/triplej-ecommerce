@@ -66,6 +66,29 @@ def _reset_user_id_sequence_once():
 with app.app_context():
     _reset_user_id_sequence_once()
 
+
+def _reset_user_id_sequence_once():
+    if db.engine.url.get_backend_name() != "postgresql":
+        return
+    try:
+        db.session.execute(text("""
+            SELECT setval(
+              pg_get_serial_sequence('"user"', 'id'),
+              COALESCE((SELECT MAX(id) FROM "user"), 0),
+              true
+            );
+        """))
+        db.session.commit()
+        print("[SEQ] 'user'.id sequence reseteada ✅")
+    except Exception as e:
+        db.session.rollback()
+        print("[SEQ] No se pudo resetear la secuencia:", e)
+
+
+# ▶️ Lánzalo una sola vez al cargar la app
+with app.app_context():
+    _reset_user_id_sequence_once()
+
 # Add all endpoints form the API with a "api" prefix
 app.register_blueprint(api, url_prefix='/api')
 
@@ -194,26 +217,114 @@ def get_orders():
         return list_orders, 200
     except Exception as e:
         raise APIException(str(e), status_code=500)
-    
+
+
+@app.route('/my-cart', methods=['POST'])
+def add_item_to_cart():
+    try:
+        item = request.get_json()
+        if not item:
+            abort(400, "Empty request body")
+
+        user = db.session.execute(
+            db.select(User).where(User.id == 2)
+        ).scalar_one_or_none()
+        if not user:
+            abort(404, f"User with id={2} not found.")
+
+        product = db.session.execute(
+            db.select(Product).where(Product.id == item["id"])
+        ).scalar_one_or_none()
+        if not product:
+            abort(404, f"Product with id={item['id']} not found.")
+
+        order = db.session.execute(
+            db.select(Order)
+            .join(Order.users)
+            .where(User.id == user.id)
+        ).scalar_one_or_none()
+
+        if not order:
+            order = Order()
+            db.session.add(order)
+            user.orders.append(order)
+            product.orders.append(order)
+            db.session.flush()
+
+        existing_item = db.session.execute(
+            db.select(OrderItem)
+            .where(OrderItem.order_id == order.id)
+            .where(OrderItem.prod_id == product.id)
+        ).scalar_one_or_none()
+
+        quantity = 1
+
+        if existing_item is None:
+            order_item = OrderItem(
+                order_id=order.id,
+                prod_id=item["id"],
+                quantity=quantity
+            )
+            order.products.append(product)
+            db.session.add(order_item)
+        else:
+            quantity = existing_item.quantity + 1
+            db.session.execute(
+                db.update(OrderItem)
+                .where(OrderItem.id == existing_item.id)
+                .values(quantity=quantity)
+            )
+        if quantity > product.amount:
+            return jsonify({"message": "Aborted, there are not that amount of products in stock."})
+        
+        db.session.commit()
+
+        return jsonify({
+            "message": "Producto añadido al carrito correctamente.",
+            "order_id": order.id,
+            "prod_id": product.id,
+            "quantity": quantity,
+            "stock": product.amount
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        raise APIException(str(e), status_code=500)
+
+
 @app.route('/my-cart/<prod_id>', methods=['DELETE'])
 def delete_prod_from_cart(prod_id):
     try:
-        order_item = db.session.execute(db.select(OrderItem).where(OrderItem.prod_id == prod_id)).scalar_one_or_none() 
-        if order_item is None: abort(404, f'OrderItem does not have a record with prod_id = {prod_id}.')
+        product = db.session.execute(db.select(Product).where(
+            Product.id == prod_id)).scalar_one_or_none()
+        user = db.session.execute(db.select(User).where(
+            User.id == 2)).scalar_one_or_none()
 
-        count = db.session.execute(db.select(func.count(OrderItem.order_id)).where(OrderItem.order_id == order_item.order_id))
-        print_stderr(count.scalar_one_or_none())
-        if count == 1: 
-            order = db.session.execute(db.select(Order).where(Order.id == order_item.order_id)).scalar_one_or_none()
-            if order is None: abort(404, f'Order does not have a record with id = ${order_item.order_id}')
-            db.session.remove(order_item)        
-            db.session.remove(order)   
-            db.session.commit()     
-        else:
+        order = db.session.execute(db.select(Order).join(
+            Order.users).where(User.id == 2)).scalar_one_or_none()
+        if order is None:
+            abort(404, f'Order does not have a record with user_id = 2.')
+        order_item = db.session.execute(db.select(OrderItem).where(
+            OrderItem.prod_id == prod_id).where(OrderItem.order_id == order.id)).scalar_one_or_none()
+        if order_item is None:
+            abort(
+                404, f'OrderItem does not have a record with prod_id = {prod_id}.')
+
+        count = db.session.execute(db.select(func.count(OrderItem.order_id)).where(
+            OrderItem.order_id == order.id)).scalar_one_or_none()
+
+        if count == 1:
             db.session.delete(order_item)
-            db.session.commit()
+            order.products.remove(product)
+            order.users.remove(user)
+            db.session.delete(order)
+        else:
+            order.products.remove(product)
+            db.session.delete(order_item)
 
-        return jsonify({"message":"Delete completed!"}), 200
+        db.session.commit()
+
+        return jsonify({"message": "Delete completed!"}), 200
     except Exception as e:
         raise APIException(str(e), status_code=500)
 
@@ -334,6 +445,11 @@ def add_favorites():
         db.session.rollback()
         raise APIException(str(e), status_code=500)
 
+""" @app.route('/favs', methods=['POST'])
+def add_fav():
+    item = request.get_json()
+
+    user = db.session.execute(db.select(User).where(User.id == 2)) """
 
 @app.route('/products', methods=['GET'])
 def get_products():
@@ -388,6 +504,97 @@ def register():
         password = data.get("password")
         firstname = data.get("firstname") or data.get("nombre")
         lastname  = data.get("lastname")  or data.get("apellido")
+
+        # 🔒 fuerza rol a COSTUMER (y asegúrate de que existe en BD)
+        rol_value = RoleEnum.COSTUMER
+
+        if not all([email, password, firstname, lastname]):
+            return jsonify({"msg": "All fields are required"}), 400
+
+        if User.query.filter_by(email=email).first():
+            return jsonify({"msg": "User already exists"}), 409
+
+        new_user = User(
+            email=email,
+            password=password,
+            firstname=firstname,
+            lastname=lastname,
+            rol=rol_value,
+            is_active=True
+        )
+        db.session.add(new_user)
+        db.session.commit()
+        return jsonify(new_user.serialize()), 201
+
+    except Exception as e:
+        # verás el motivo real del 500
+        print("Register error:", e, file=sys.stderr)
+        traceback.print_exc()
+        return jsonify({"msg": f"Internal Error: {str(e)}"}), 500
+
+
+@app.route("/protected", methods=["GET"])
+@jwt_required()
+def protected():
+    user_id = get_jwt_identity()   # ahora es string
+    try:
+        user_id = int(user_id)
+    except (TypeError, ValueError):
+        return jsonify({"msg": "Invalid token identity"}), 422
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"msg": "User not found"}), 404
+
+    return jsonify(user.serialize()), 200
+
+
+@app.route('/products/<int:id>', methods=['GET'])
+def get_product_by_id(id):
+    try:
+        # Buscar el producto por su ID (clave primaria)
+        product = db.session.get(Product, id)
+
+        # Si no existe, devolver error 404
+        if not product:
+            abort(404, description=f"Product with id {id} not found")
+
+        # Si existe, devolver el producto serializado
+        return jsonify(product.serialize()), 200
+
+    except Exception as e:
+        raise APIException(str(e), status_code=500)
+
+
+@app.route("/login", methods=["POST"])
+def login():
+    data = request.get_json()
+    email = data.get("email")
+    password = data.get("password")
+
+    if not email or not password:
+        return jsonify({"msg": "Email and password required"}), 400
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({"msg": "User not found"}), 404
+
+    # Aquí comparamos directamente, aunque se recomienda bcrypt
+    if user.password != password:
+        return jsonify({"msg": "Incorrect password"}), 401
+
+    token = create_access_token(identity=str(user.id))
+    return jsonify({"token": token, "user": user.serialize()}), 200
+
+
+@app.route("/register", methods=["POST"])
+def register():
+    try:
+        data = request.get_json() or {}
+        email = data.get("email")
+        password = data.get("password")
+        firstname = data.get("firstname") or data.get("nombre")
+        lastname = data.get("lastname") or data.get("apellido")
 
         # 🔒 fuerza rol a COSTUMER (y asegúrate de que existe en BD)
         rol_value = RoleEnum.COSTUMER
