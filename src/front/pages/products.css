@@ -108,14 +108,25 @@ body{
   overflow:hidden;
   box-shadow:0 4px 16px rgba(0,0,0,.05);
 }
-.thumb{
-  background:#eef0f3;
-  border:1px solid var(--line);
-  border-bottom:none;
-  border-radius:var(--r-lg) var(--r-lg) 0 0;
-  overflow:hidden;
+/* === Contenedor de imagen === */
+.thumb {
+  width: 100%;
+  height: 250px; /* controla la altura de cada tarjeta */
+  overflow: hidden;
+  background-color: #f9f9f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+/* === Imagen dentro del contenedor === */
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* ✅ la imagen llena todo el espacio */
+  object-position: center; /* centrada en su recorte */
+  display: block;
+}
 
 .info{
   display:flex; flex-direction:column; gap:10px;
