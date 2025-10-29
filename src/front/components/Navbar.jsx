@@ -86,8 +86,8 @@ export const Navbar = () => {
               value={term}
               onChange={e => setTerm(e.target.value)}
             />
-            <button className="btn btn-outline-secondary" type="submit">
-              <i className="fa-solid fa-magnifying-glass"></i>
+            <button className="btn btn-secondary" type="submit" style={{ border: "white", backgroundColor: "transparent" }}>
+              <i className="fa-solid fa-magnifying-glass" style={{ color: "white", border: "white" }}></i>
             </button>
           </form>
           
@@ -100,7 +100,7 @@ export const Navbar = () => {
               <i className="fa-solid fa-cart-shopping"></i>
             </Link>
             <Link
-              to={currentUser ? "/private" : "/login"}  // Lógica directamente en el to
+              to={currentUser ? "/private" : "/login"}  
               className="btn btn-link p-0 text-primary fs-5"
             >
               <i className="fa-solid fa-user"></i>
