@@ -59,8 +59,116 @@
 /* Estilo específico de los párrafos dentro del reverso */
 .flip-card-back p {
   margin: 0;                  /* elimina márgenes externos de Bootstrap */
-  line-height: 1.4;
 }
+
+/* === Carrusel tipo Amazon === */
+.carousel-container {
+  position: relative;
+  width: 90%;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.carousel-track {
+  display: flex;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  gap: 10px;
+  padding: 10px;
+  scrollbar-width: none; /* Oculta la barra en Firefox */
+}
+
+.carousel-track::-webkit-scrollbar {
+  display: none; /* Oculta barra en Chrome/Safari */
+}
+
+.carousel-card {
+  flex: 0 0 calc(25% - 10px); /* 4 por fila */
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.carousel-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Imagen centrada sin recorte */
+.image-wrapper {
+  width: 100%;
+  height: 200px;
+  background: #f8f8f8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* ✅ muestra la imagen completa */
+}
+
+/* Info del producto */
+.carousel-info {
+  padding: 10px;
+  text-align: center;
+}
+
+.carousel-info h5 {
+  font-size: 0.9rem;
+  margin: 0 0 4px;
+  font-weight: 600;
+  color: #333;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.carousel-info .price {
+  font-size: 0.85rem;
+  color: #007bff;
+  font-weight: bold;
+}
+
+/* Flechas */
+.scroll-btn {
+  position: absolute;
+  top: 45%;
+  transform: translateY(-50%);
+  font-size: 2rem;
+  color: #333;
+  background: rgba(255,255,255,0.9);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  transition: background 0.2s ease;
+}
+
+.scroll-btn:hover {
+  background: #f0f0f0;
+}
+
+.scroll-btn.left {
+  left: -20px;
+}
+
+.scroll-btn.right {
+  right: -20px;
+}
+
+
 
 
 

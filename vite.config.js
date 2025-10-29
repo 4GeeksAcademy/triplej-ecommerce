@@ -21,7 +21,10 @@ export default ({ mode }) => {
           target: backend,
           changeOrigin: true,
           secure: false,
-        }
+        },
+        "/login": { target: backend, changeOrigin: true, secure: false },
+        "/register": { target: backend, changeOrigin: true, secure: false },
+        "/protected": { target: backend, changeOrigin: true, secure: false },
         // Si más tarde expones /api/*:
         // "/api": { target: backend, changeOrigin: true, secure: false },
       },

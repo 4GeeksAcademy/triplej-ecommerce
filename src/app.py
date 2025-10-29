@@ -45,6 +45,26 @@ setup_admin(app)
 
 # add the admin
 setup_commands(app)
+def _reset_user_id_sequence_once():
+    if db.engine.url.get_backend_name() != "postgresql":
+        return
+    try:
+        db.session.execute(text("""
+            SELECT setval(
+              pg_get_serial_sequence('"user"', 'id'),
+              COALESCE((SELECT MAX(id) FROM "user"), 0),
+              true
+            );
+        """))
+        db.session.commit()
+        print("[SEQ] 'user'.id sequence reseteada ✅")
+    except Exception as e:
+        db.session.rollback()
+        print("[SEQ] No se pudo resetear la secuencia:", e)
+
+# ▶️ Lánzalo una sola vez al cargar la app
+with app.app_context():
+    _reset_user_id_sequence_once()
 
 
 def _reset_user_id_sequence_once():
@@ -439,6 +459,95 @@ def get_products():
     except Exception as e:
         raise APIException(str(e), status_code=500)
 
+@app.route('/products/<int:id>', methods=['GET'])
+def get_product_by_id(id):
+    try:
+        # Buscar el producto por su ID (clave primaria)
+        product = db.session.get(Product, id)
+
+        # Si no existe, devolver error 404
+        if not product:
+            abort(404, description=f"Product with id {id} not found")
+
+        # Si existe, devolver el producto serializado
+        return jsonify(product.serialize()), 200
+
+    except Exception as e:
+        raise APIException(str(e), status_code=500)
+    
+@app.route("/login", methods=["POST"])
+def login():
+    data = request.get_json()
+    email = data.get("email")
+    password = data.get("password")
+
+    if not email or not password:
+        return jsonify({"msg": "Email and password required"}), 400
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({"msg": "User not found"}), 404
+
+    # Aquí comparamos directamente, aunque se recomienda bcrypt
+    if user.password != password:
+        return jsonify({"msg": "Incorrect password"}), 401
+
+    token = create_access_token(identity=str(user.id))
+    return jsonify({"token": token, "user": user.serialize()}), 200
+
+
+@app.route("/register", methods=["POST"])
+def register():
+    try:
+        data = request.get_json() or {}
+        email = data.get("email")
+        password = data.get("password")
+        firstname = data.get("firstname") or data.get("nombre")
+        lastname  = data.get("lastname")  or data.get("apellido")
+
+        # 🔒 fuerza rol a COSTUMER (y asegúrate de que existe en BD)
+        rol_value = RoleEnum.COSTUMER
+
+        if not all([email, password, firstname, lastname]):
+            return jsonify({"msg": "All fields are required"}), 400
+
+        if User.query.filter_by(email=email).first():
+            return jsonify({"msg": "User already exists"}), 409
+
+        new_user = User(
+            email=email,
+            password=password,
+            firstname=firstname,
+            lastname=lastname,
+            rol=rol_value,
+            is_active=True
+        )
+        db.session.add(new_user)
+        db.session.commit()
+        return jsonify(new_user.serialize()), 201
+
+    except Exception as e:
+        # verás el motivo real del 500
+        print("Register error:", e, file=sys.stderr)
+        traceback.print_exc()
+        return jsonify({"msg": f"Internal Error: {str(e)}"}), 500
+
+
+@app.route("/protected", methods=["GET"])
+@jwt_required()
+def protected():
+    user_id = get_jwt_identity()   # ahora es string
+    try:
+        user_id = int(user_id)
+    except (TypeError, ValueError):
+        return jsonify({"msg": "Invalid token identity"}), 422
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"msg": "User not found"}), 404
+
+    return jsonify(user.serialize()), 200
+
 
 @app.route('/products/<int:id>', methods=['GET'])
 def get_product_by_id(id):
@@ -535,3 +644,4 @@ def protected():
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3001))
     app.run(host='0.0.0.0', port=PORT, debug=True)
+

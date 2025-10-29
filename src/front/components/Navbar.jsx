@@ -1,15 +1,26 @@
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-// import logo from "assets/img/logo.png"
+import { useAuth } from "../AuthContext"; // Ruta del contexto
 
 export const Navbar = () => {
-
+  const { currentUser, logout } = useAuth() || {}; // Accedemos al contexto
   const navigate = useNavigate();
-  const location = useLocation();
+    const location = useLocation();
   const [searchParams] = useSearchParams();
   const [term, setTerm] = useState("");
 
-  // Mantener el input del navbar sincronizado con ?q= cuando estás en /products
+  // Maneja la redirección del botón de usuario según si hay usuario autenticado
+  const handleUserClick = () => {
+    if (currentUser) {
+      // Si hay un usuario autenticado, redirige a la PrivateArea
+      navigate("/private");
+    } else {
+      // Si no hay usuario, redirige a login
+      navigate("/login");
+    }
+  };
+
+    // Mantener el input del navbar sincronizado con ?q= cuando estás en /products
   useEffect(() => {
     if (location.pathname.startsWith("/products")) {
       setTerm(searchParams.get("q") || "");
@@ -26,10 +37,8 @@ export const Navbar = () => {
     navigate(q ? `/products?q=${encodeURIComponent(q)}` : "/products");
   };
 
-
-
   return (
-    <nav className="navbar navbar-expand-lg bg-light shadow-sm px-4">
+ <nav className="navbar navbar-expand-lg bg-light shadow-sm px-4">
       <div className="container-fluid">
         {/* Logo y nombre */}
          <Link className="nav-link fw-semibold" to="/">
@@ -77,12 +86,12 @@ export const Navbar = () => {
               value={term}
               onChange={e => setTerm(e.target.value)}
             />
-            <button className="btn btn-outline-secondary" type="submit">
-              <i className="fa-solid fa-magnifying-glass"></i>
+            <button className="btn btn-secondary" type="submit" style={{ border: "white", backgroundColor: "transparent" }}>
+              <i className="fa-solid fa-magnifying-glass" style={{ color: "white", border: "white" }}></i>
             </button>
           </form>
+          
 
-          {/* Iconos */}
           <div className="d-flex align-items-center gap-3">
             <a href="#favoritos" className="text-danger fs-5">
               <i className="fa-solid fa-heart"></i>
@@ -90,7 +99,10 @@ export const Navbar = () => {
             <Link to="/cart" className="text-success fs-5">
               <i className="fa-solid fa-cart-shopping"></i>
             </Link>
-            <Link to="/login" className="text-primary fs-5">
+            <Link
+              to={currentUser ? "/private" : "/login"}  
+              className="btn btn-link p-0 text-primary fs-5"
+            >
               <i className="fa-solid fa-user"></i>
             </Link>
           </div>

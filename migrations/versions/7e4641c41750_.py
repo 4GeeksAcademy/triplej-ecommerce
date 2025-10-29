@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: d2d4a847e478
+Revision ID: 7e4641c41750
 Revises: 
-Create Date: 2025-10-22 08:59:25.734736
+Create Date: 2025-10-24 09:44:05.545450
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'd2d4a847e478'
+revision = '7e4641c41750'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -24,7 +24,6 @@ def upgrade():
     )
     op.create_table('order',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('quantity', sa.Integer(), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('user',
@@ -43,7 +42,7 @@ def upgrade():
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('artist_id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=120), nullable=False),
-    sa.Column('category', sa.Enum('HOME_DECORATION', 'SCULPTURES', 'STATUE', name='categoryenum'), nullable=False),
+    sa.Column('category', sa.Enum('LAMPS', 'SCULPTURES', 'STATUE', name='categoryenum'), nullable=False),
     sa.Column('details', sa.String(length=1000), nullable=False),
     sa.Column('amount', sa.Integer(), nullable=False),
     sa.Column('price', sa.Integer(), nullable=False),
@@ -68,10 +67,10 @@ def upgrade():
     op.create_table('order_item',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('order_id', sa.Integer(), nullable=False),
-    sa.Column('product_id', sa.Integer(), nullable=False),
+    sa.Column('prod_id', sa.Integer(), nullable=False),
     sa.Column('quantity', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['order_id'], ['order.id'], ),
-    sa.ForeignKeyConstraint(['product_id'], ['product.id'], ),
+    sa.ForeignKeyConstraint(['prod_id'], ['product.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('prod_fav',
