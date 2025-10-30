@@ -188,29 +188,29 @@ def get_all_orders():
 @app.route('/my-cart/<int:user_id>', methods=['GET'])
 def get_orders(user_id):
     try:
-
-
         results = db.session.execute(
             db.select(Order, User, Product, OrderItem)
             .join(Order.users)
             .where(User.id == user_id)
-            .join(Order.products)
-            .join(Order.items)).all()
+            .join(Order.items)
+            .join(OrderItem.product)).all()
 
         orders_dict = {}
         for order, _, prod, order_item in results:
+
+            order_item_id = order_item.id
+            quantity = order_item.quantity
 
             if order.id not in orders_dict:
                 order_info = order.serialize()
                 order_info['products'] = []
                 orders_dict[order.id] = order_info
-
             if any(p["product_details"]["id"] == prod.id for p in orders_dict[order.id]["products"]):
                 continue
 
             orders_dict[order.id]['products'].append({
-                "item_id": order_item.id,
-                "quantity_ordered": order_item.quantity,
+                "item_id": order_item_id,
+                "quantity_ordered": quantity,
                 "product_details": prod.serialize()
             })
 
@@ -219,6 +219,27 @@ def get_orders(user_id):
         return list_orders, 200
     except Exception as e:
         raise APIException(str(e), status_code=500)
+    
+@app.route('/my-cart', methods=['PUT'])
+def update_amount():
+    try:
+        request_body = request.get_json()
+        order_item_id = request_body.get("order_item_id")
+        quantity = request_body.get("counter")
+
+        db.session.execute(
+                db.update(OrderItem)
+                .where(OrderItem.id == order_item_id)
+                .values(quantity=quantity)
+            )
+        
+        db.session.commit()
+
+        result = db.session.execute(db.select(OrderItem).where(OrderItem.id == order_item_id)).scalar_one_or_none().serialize()
+
+        return jsonify({ "message": "Amount updated", "result": result })
+    except Exception as e:
+        APIException(str(e), status_code=500)
 
 
 @app.route('/my-cart', methods=['POST'])
@@ -306,17 +327,17 @@ def add_item_to_cart():
 def delete_prod_from_cart(prod_id):
     try:
 
-        user = request.get_json().get("currentUser")
+        current_user = request.get_json().get("currentUser")
 
         product = db.session.execute(db.select(Product).where(
             Product.id == prod_id)).scalar_one_or_none()
         user = db.session.execute(db.select(User).where(
-            User.id == user["id"])).scalar_one_or_none()
+            User.id == current_user["id"])).scalar_one_or_none()
 
         order = db.session.execute(db.select(Order).join(
-            Order.users).where(User.id == user["id"])).scalar_one_or_none()
+            Order.users).where(User.id == current_user["id"])).scalar_one_or_none()
         if order is None:
-            abort(404, f'Order does not have a record with user_id = {user["id"]}.')
+            abort(404, f'Order does not have a record with user_id = {current_user["id"]}.')
         order_item = db.session.execute(db.select(OrderItem).where(
             OrderItem.prod_id == prod_id).where(OrderItem.order_id == order.id)).scalar_one_or_none()
         if order_item is None:
@@ -457,12 +478,6 @@ def add_favorites():
     except Exception as e:
         db.session.rollback()
         raise APIException(str(e), status_code=500)
-
-""" @app.route('/favs', methods=['POST'])
-def add_fav():
-    item = request.get_json()
-
-    user = db.session.execute(db.select(User).where(User.id == 2)) """
 
 @app.route('/products', methods=['GET'])
 def get_products():

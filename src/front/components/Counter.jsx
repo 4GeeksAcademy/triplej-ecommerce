@@ -1,7 +1,20 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-export const Counter = ({ amount, totalAmount, setAmounts }) => {
+export const Counter = ({ order_item_id, amount, totalAmount, setAmounts }) => {
     const [counter, setCounter] = useState(amount);
+    
+    const update_amount = () => {
+        fetch(`/my-cart`, {
+            method:"PUT",
+            headers: {
+                "Content-type": "application/json"
+            },
+            body: JSON.stringify({ counter, order_item_id})
+        })
+        .then(resp => resp.json())
+        .then(data => console.log(data))
+        .catch(e => console.log(e));
+    }
 
     const handleButton = (e) => {
         switch (e.currentTarget.id) {
@@ -19,6 +32,10 @@ export const Counter = ({ amount, totalAmount, setAmounts }) => {
             }
         }
     }
+
+    useEffect(() => {
+        update_amount()
+    }, [counter])
 
     return (
         <div className="d-flex justify-content-center align-items-center">

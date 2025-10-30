@@ -238,7 +238,6 @@ export default function Products() {
                           addToCart(p);
                         }}
                         disabled={disabled}
-
                       >
                         Añadir al carrito
                       </button>

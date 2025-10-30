@@ -82,6 +82,7 @@ export const Cart = () => {
                                             </td>
                                             <td className="text-center align-middle">
                                                 <Counter
+                                                    order_item_id={prod['item_id']}
                                                     amount={amounts[id]}
                                                     totalAmount={prod['product_details']['amount']}
                                                     setAmounts={(newAmount) => setAmounts((prev) => ({ ...prev, [id]: newAmount }))} />
