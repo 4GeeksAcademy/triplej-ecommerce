@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { Counter } from "../components/Counter";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
+import Spinner from 'react-bootstrap/Spinner';
 
 export const Cart = () => {
     const [subtotal, setSubtotal] = useState(0);
     const [amounts, setAmounts] = useState({});
+    const [loading, setLoading] = useState(false);
     const [orders, setOrders] = useState([]);
     const { currentUser } = useAuth();
     const navigate = useNavigate();
@@ -15,17 +17,20 @@ export const Cart = () => {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",
-            }, 
+            },
             body: JSON.stringify({ currentUser }),
         })
-        .then(resp => resp.json())
-        .then(data => {
-            console.log(data);
-            setOrders([...orders.filter(order => order['product_details']['id'] != prod_id)])
-        })
+            .then(resp => resp.json())
+            .then(data => {
+                console.log(data);
+                setOrders([...orders.filter(order => order['product_details']['id'] != prod_id)])
+            })
     }
 
     useEffect(() => {
+        if (!currentUser) return;
+
+        setLoading(true)
         fetch(`/my-cart/${currentUser.id}`)
             .then(resp => resp.json())
             .then(data => {
@@ -35,6 +40,7 @@ export const Cart = () => {
                 );
                 setAmounts(initialAmounts);
                 setOrders(data[0]['products']);
+                setLoading(false);
             })
             .catch(error => console.log({ error }))
     }, [currentUser]);
@@ -43,6 +49,44 @@ export const Cart = () => {
         const subtotal = orders.reduce((acc, prod, id) => acc + (amounts[id] * prod.product_details.price), 0);
         setSubtotal(subtotal);
     }, [amounts]);
+
+    if (loading) {
+        return (
+            <div className="container">
+                <div className="row vh-100">
+                    <div className="col-12 d-flex justify-content-center align-items-center h-75">
+                        <Spinner animation="border" role="status">
+                            <span className="visually-hidden">Loading...</span>
+                        </Spinner>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    if (!currentUser) {
+        return (
+            <div className="container-fluid h-100">
+                <div className="row h-100 justify-content-center">
+                    <div className="col-10">
+                        <h1 className="text-center"><Link className="text-black" to={"/login"}>Log in</Link> to see the cart!</h1>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    if (orders.length === 0) {
+        return (
+            <div className="container-fluid h-100">
+                <div className="row h-100 justify-content-center">
+                    <div className="col-10">
+                        <h1 className="text-center">Empty cart... Why don't you check our <Link className="text-black" to={"/products"}>products</Link> :D</h1>
+                    </div>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="container-fluid h-100 my-3">
