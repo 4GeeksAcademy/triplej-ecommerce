@@ -45,6 +45,8 @@ setup_admin(app)
 
 # add the admin
 setup_commands(app)
+
+
 def _reset_user_id_sequence_once():
     if db.engine.url.get_backend_name() != "postgresql":
         return
@@ -61,6 +63,7 @@ def _reset_user_id_sequence_once():
     except Exception as e:
         db.session.rollback()
         print("[SEQ] No se pudo resetear la secuencia:", e)
+
 
 # ▶️ Lánzalo una sola vez al cargar la app
 with app.app_context():
@@ -194,26 +197,34 @@ def get_orders():
         return list_orders, 200
     except Exception as e:
         raise APIException(str(e), status_code=500)
-    
+
+
 @app.route('/my-cart/<prod_id>', methods=['DELETE'])
 def delete_prod_from_cart(prod_id):
     try:
-        order_item = db.session.execute(db.select(OrderItem).where(OrderItem.prod_id == prod_id)).scalar_one_or_none() 
-        if order_item is None: abort(404, f'OrderItem does not have a record with prod_id = {prod_id}.')
+        order_item = db.session.execute(db.select(OrderItem).where(
+            OrderItem.prod_id == prod_id)).scalar_one_or_none()
+        if order_item is None:
+            abort(
+                404, f'OrderItem does not have a record with prod_id = {prod_id}.')
 
-        count = db.session.execute(db.select(func.count(OrderItem.order_id)).where(OrderItem.order_id == order_item.order_id))
+        count = db.session.execute(db.select(func.count(OrderItem.order_id)).where(
+            OrderItem.order_id == order_item.order_id))
         print_stderr(count.scalar_one_or_none())
-        if count == 1: 
-            order = db.session.execute(db.select(Order).where(Order.id == order_item.order_id)).scalar_one_or_none()
-            if order is None: abort(404, f'Order does not have a record with id = ${order_item.order_id}')
-            db.session.remove(order_item)        
-            db.session.remove(order)   
-            db.session.commit()     
+        if count == 1:
+            order = db.session.execute(db.select(Order).where(
+                Order.id == order_item.order_id)).scalar_one_or_none()
+            if order is None:
+                abort(
+                    404, f'Order does not have a record with id = ${order_item.order_id}')
+            db.session.remove(order_item)
+            db.session.remove(order)
+            db.session.commit()
         else:
             db.session.delete(order_item)
             db.session.commit()
 
-        return jsonify({"message":"Delete completed!"}), 200
+        return jsonify({"message": "Delete completed!"}), 200
     except Exception as e:
         raise APIException(str(e), status_code=500)
 
@@ -335,6 +346,150 @@ def add_favorites():
         raise APIException(str(e), status_code=500)
 
 
+@app.route('/user_favs', methods=['POST'])
+def add_user_favs():
+    try:
+        user_fav = request.get_json()
+        print("Request body: ", user_fav)
+
+        for row in user_fav:
+            fav = db.session.get(Favorite, row["fav_id"])
+            user = db.session.get(User, row["user_id"])
+            if not fav or not user:
+                abort(404, description="Item not found")
+
+            fav.users.append(user)
+
+        db.session.commit()
+
+        return "user_fav filled successfully.", 201
+
+    except Exception as e:
+        db.session.rollback()
+        raise APIException(str(e), status_code=500)
+
+
+@app.route('/prod_favs', methods=['POST'])
+def add_prod_favs():
+    try:
+        prod_fav = request.get_json()
+        print("Request body: ", prod_fav)
+
+        for row in prod_fav:
+            fav = db.session.get(Favorite, row["fav_id"])
+            prod = db.session.get(Product, row["prod_id"])
+            if not fav or not prod:
+                abort(404, description="Item not found")
+
+            fav.products.append(prod)
+
+        db.session.commit()
+
+        return "user_prod filled successfully.", 201
+
+    except Exception as e:
+        db.session.rollback()
+        raise APIException(str(e), status_code=500)
+
+
+@app.route('/my-favorites/<int:user_id>', methods=['GET'])
+def get_favs(user_id):
+    try:
+        favorites = db.session.execute(
+            db.select(Favorite, Product, User)
+            .join(Favorite.users)
+            .where(User.id == user_id)
+            .join(Favorite.products)).all()
+
+        if not favorites:
+            abort(404, "Favorites has no records for user_id = ${user_id}.")
+
+        results = [{
+            "fav_id": fav.serialize().get('id'),
+            **prod.serialize()
+        } for fav, prod, _ in favorites]
+
+        return jsonify(results), 201
+
+    except Exception as e:
+        raise APIException(str(e), status_code=500)
+
+
+@app.route('/my-favorites', methods=['POST'])
+def add_fav():
+    try:
+        request_body = request.get_json()
+        if not request_body:
+            abort(404, "Empty request body.")
+        prod_id = request_body.get("prod_id")
+        if not prod_id:
+            abort(404, "Product id not found.")
+        current_user = request_body.get("currentUser")
+        if not current_user:
+            abort(404, "Current user not found.")
+
+        favorite = db.session.execute(
+            db.select(Favorite)
+            .join(Favorite.users)
+            .join(Favorite.products)
+            .where(Product.id == prod_id)
+            .where(User.id == current_user["id"])).scalar_one_or_none()
+        user = db.session.execute(db.select(User).where(
+            User.id == current_user["id"])).scalar_one_or_none()
+        product = db.session.execute(db.select(Product).where(
+            Product.id == prod_id)).scalar_one_or_none()
+
+        if favorite is None:
+            fav = Favorite()
+            user.favorites.append(fav)
+            product.favorites.append(fav)
+            db.session.add(fav)
+            db.session.flush()
+
+        else:
+            favorite.products.append(product)
+
+        db.session.commit()
+
+        return jsonify({"message": "Fav added successfully."})
+
+    except Exception as e:
+        db.session.rollback()
+        raise APIException(str(e), status_code=500)
+
+
+@app.route('/my-favorites/<int:prod_id>', methods=['DELETE'])
+def delete_fav(prod_id):
+    try:
+        current_user = request.get_json().get('currentUser')
+
+        user = db.session.execute(db.select(User).where(
+            User.id == current_user["id"])).scalar_one_or_none()
+        product = db.session.execute(db.select(Product).where(
+            Product.id == prod_id)).scalar_one_or_none()
+        favorite = db.session.execute(
+            db.select(Favorite)
+            .join(Favorite.products)
+            .join(Favorite.users)
+            .where(User.id == current_user["id"])
+            .where(Product.id == prod_id)).scalar_one_or_none()
+
+        if favorite is None:
+            abort(
+                404, f"Favorite with prod_id = ${prod_id} and user_id = ${current_user["id"]} not found.")
+
+        favorite.users.remove(user)
+        favorite.products.remove(product)
+        db.session.delete(favorite)
+        db.session.commit()
+
+        return jsonify({"message": "Fav deleted successfully."})
+
+    except Exception as e:
+        db.session.rollback()
+        raise APIException(str(e), status_code=500)
+
+
 @app.route('/products', methods=['GET'])
 def get_products():
     try:
@@ -342,6 +497,7 @@ def get_products():
         return jsonify([product.serialize() for product in products]), 200
     except Exception as e:
         raise APIException(str(e), status_code=500)
+
 
 @app.route('/products/<int:id>', methods=['GET'])
 def get_product_by_id(id):
@@ -358,7 +514,8 @@ def get_product_by_id(id):
 
     except Exception as e:
         raise APIException(str(e), status_code=500)
-    
+
+
 @app.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
@@ -387,7 +544,7 @@ def register():
         email = data.get("email")
         password = data.get("password")
         firstname = data.get("firstname") or data.get("nombre")
-        lastname  = data.get("lastname")  or data.get("apellido")
+        lastname = data.get("lastname") or data.get("apellido")
 
         # 🔒 fuerza rol a COSTUMER (y asegúrate de que existe en BD)
         rol_value = RoleEnum.COSTUMER
@@ -437,4 +594,3 @@ def protected():
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3001))
     app.run(host='0.0.0.0', port=PORT, debug=True)
-

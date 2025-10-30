@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import "./products.css";
+import { useAuth } from "../AuthContext";
+import { useFavorites } from "../FavoritesContext";
 
 // Normaliza rutas de imágenes
 const normalizeImgPath = (path) => {
@@ -28,11 +30,12 @@ export default function Products() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("todas");
   const [products, setProducts] = useState([]);
-  const [favorites, setFavorites] = useState(new Set()); // ❤️ IDs favoritos
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
+  const { currentUser } = useAuth();
+  const { favorites, toggleFavorite } = useFavorites();
 
   // Cargar productos
   useEffect(() => {
@@ -78,14 +81,6 @@ export default function Products() {
 
   const formatPrice = (n) => `${Number(n ?? 0).toFixed(2)} €`;
 
-  const toggleFavorite = (id) => {
-    setFavorites((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
-
   return (
     <div className="products-page">
       <div
@@ -96,9 +91,8 @@ export default function Products() {
       <div className={`content ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}>
         {/* Sidebar */}
         <aside
-          className={`sidebar ${sidebarOpen ? "open" : ""} ${
-            sidebarCollapsed ? "collapsed" : ""
-          }`}
+          className={`sidebar ${sidebarOpen ? "open" : ""} ${sidebarCollapsed ? "collapsed" : ""
+            }`}
         >
           <button
             className="sidebar-toggle"
@@ -208,9 +202,7 @@ export default function Products() {
                         }
                       >
                         <i
-                          className={
-                            isFav ? "fas fa-heart" : "far fa-heart"
-                          }
+                          className={favorites.has(p.id) ? "fas fa-heart" : "far fa-heart"}
                         ></i>
                       </button>
 

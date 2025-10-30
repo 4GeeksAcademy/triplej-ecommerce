@@ -6,6 +6,7 @@ import { RouterProvider } from "react-router-dom";  // Import RouterProvider to 
 import { router } from "./routes";  // Import the router configuration
 import { StoreProvider } from './hooks/useGlobalReducer';  // Import the StoreProvider for global state management
 import { BackendURL } from './components/BackendURL';
+import { FavoritesProvider } from './FavoritesContext';
 
 const Main = () => {
   if (!import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_BACKEND_URL === "") {
@@ -20,10 +21,12 @@ const Main = () => {
     <React.StrictMode>
       {/* Coloca AuthProvider fuera del RouterProvider */}
       <AuthProvider>
+        <FavoritesProvider>
         <StoreProvider>
           {/* El RouterProvider está envuelto dentro de AuthProvider */}
           <RouterProvider router={router} />
         </StoreProvider>
+        </FavoritesProvider>
       </AuthProvider>
     </React.StrictMode>
   );
