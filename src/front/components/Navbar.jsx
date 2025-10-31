@@ -1,13 +1,18 @@
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "../AuthContext"; // Ruta del contexto
+import { useFavorites } from "../FavoritesContext";
 
 export const Navbar = () => {
   const { currentUser, logout } = useAuth() || {}; // Accedemos al contexto
   const navigate = useNavigate();
-    const location = useLocation();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const [term, setTerm] = useState("");
+  const { favorites, removeFavorite } = useFavorites();
+  const [products, setProducts] = useState([]);
+  
+  const favProducts = products.filter((p) => favorites.has(p.id));
 
   // Maneja la redirección del botón de usuario según si hay usuario autenticado
   const handleUserClick = () => {
@@ -20,7 +25,7 @@ export const Navbar = () => {
     }
   };
 
-    // Mantener el input del navbar sincronizado con ?q= cuando estás en /products
+  // Mantener el input del navbar sincronizado con ?q= cuando estás en /products
   useEffect(() => {
     if (location.pathname.startsWith("/products")) {
       setTerm(searchParams.get("q") || "");
@@ -30,6 +35,17 @@ export const Navbar = () => {
     }
   }, [location, searchParams]);
 
+  useEffect(() => {
+    products &&
+    fetch("/products")
+      .then((res) => res.json())
+      .then(data => {
+        console.log("Navbar products: ", data)
+        setProducts(data)})
+      .catch(console.error);
+  }, []);
+
+
   const onSubmit = (e) => {
     e.preventDefault();
     const q = term.trim();
@@ -38,10 +54,10 @@ export const Navbar = () => {
   };
 
   return (
- <nav className="navbar navbar-expand-lg bg-light shadow-sm px-4">
+    <nav className="navbar navbar-expand-lg bg-light shadow-sm px-4">
       <div className="container-fluid">
         {/* Logo y nombre */}
-         <Link className="nav-link fw-semibold" to="/">
+        <Link className="nav-link fw-semibold" to="/">
           <img
             src="assets/img/logo.png"
             alt="Logo"
@@ -90,12 +106,47 @@ export const Navbar = () => {
               <i className="fa-solid fa-magnifying-glass" style={{ color: "white", border: "white" }}></i>
             </button>
           </form>
-          
+
 
           <div className="d-flex align-items-center gap-3">
-            <a href="#favoritos" className="text-danger fs-5">
-              <i className="fa-solid fa-heart"></i>
-            </a>
+            <div className="dropdown">
+              <a
+                href="#"
+                className="text-danger fs-5"
+                id="favoritesDropdown"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <i className="fa-solid fa-heart"></i>
+              </a>
+
+              <ul
+                className="dropdown-menu dropdown-menu-end p-2 shadow"
+                aria-labelledby="favoritesDropdown"
+                style={{ minWidth: "250px" }}
+              >
+                <li className="dropdown-header fw-bold text-danger">Your Favorites ❤️</li>
+                <li><hr className="dropdown-divider" /></li>
+                {
+                  favProducts.length > 0 ? 
+                  favProducts.map((prod, id) => (
+                      <li key={id} className="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                          <p className="m-0 fw-bold">{prod.name}</p>
+                          <small className="text-muted">{prod.category}</small>
+                        </div>
+                        <button className="btn btn-sm btn-outline-danger ms-2" onClick={() => removeFavorite(prod.id)}>
+                          <i className="fa-solid fa-trash"></i>
+                        </button>
+                      </li>
+                    )) :
+                    <li><span className="dropdown-item-text text-muted">No favorites yet</span></li>
+
+                }
+
+
+              </ul>
+            </div>
             <Link to="/cart" className="text-success fs-5">
               <i className="fa-solid fa-cart-shopping"></i>
             </Link>
@@ -108,7 +159,7 @@ export const Navbar = () => {
           </div>
         </div>
       </div>
-    </nav>
+    </nav >
   );
 };
 
