@@ -2,7 +2,7 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 import os
-from flask import Flask, request, jsonify, url_for, send_from_directory, abort
+from flask import Flask, request, jsonify, url_for, send_from_directory, abort, redirect
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
@@ -15,8 +15,12 @@ from api.commands import setup_commands
 from sqlalchemy import text, func
 import sys
 import traceback
+import stripe
 
 # from models import Person
+
+stripe.api_key = os.getenv('STRIPE_API_KEY')
+
 
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(
@@ -45,6 +49,8 @@ setup_admin(app)
 
 # add the admin
 setup_commands(app)
+
+
 def _reset_user_id_sequence_once():
     if db.engine.url.get_backend_name() != "postgresql":
         return
@@ -62,7 +68,7 @@ def _reset_user_id_sequence_once():
         db.session.rollback()
         print("[SEQ] No se pudo resetear la secuencia:", e)
 
-# ▶️ Lánzalo una sola vez al cargar la app
+
 with app.app_context():
     _reset_user_id_sequence_once()
 
@@ -85,7 +91,6 @@ def _reset_user_id_sequence_once():
         print("[SEQ] No se pudo resetear la secuencia:", e)
 
 
-# ▶️ Lánzalo una sola vez al cargar la app
 with app.app_context():
     _reset_user_id_sequence_once()
 
@@ -189,7 +194,6 @@ def get_all_orders():
 def get_orders(user_id):
     try:
 
-
         results = db.session.execute(
             db.select(Order, User, Product, OrderItem)
             .join(Order.users)
@@ -234,8 +238,8 @@ def add_item_to_cart():
 
         user = request_body.get("currentUser")
         if not user or "id" not in user:
-            abort(400, "Invalid user data")     
-            
+            abort(400, "Invalid user data")
+
         user = db.session.execute(
             db.select(User).where(User.id == user["id"])
         ).scalar_one_or_none()
@@ -286,7 +290,7 @@ def add_item_to_cart():
             )
         if quantity > product.amount:
             return jsonify({"message": "Aborted, there are not that amount of products in stock."})
-        
+
         db.session.commit()
 
         return jsonify({
@@ -316,7 +320,8 @@ def delete_prod_from_cart(prod_id):
         order = db.session.execute(db.select(Order).join(
             Order.users).where(User.id == user["id"])).scalar_one_or_none()
         if order is None:
-            abort(404, f'Order does not have a record with user_id = {user["id"]}.')
+            abort(
+                404, f'Order does not have a record with user_id = {user["id"]}.')
         order_item = db.session.execute(db.select(OrderItem).where(
             OrderItem.prod_id == prod_id).where(OrderItem.order_id == order.id)).scalar_one_or_none()
         if order_item is None:
@@ -458,11 +463,13 @@ def add_favorites():
         db.session.rollback()
         raise APIException(str(e), status_code=500)
 
+
 """ @app.route('/favs', methods=['POST'])
 def add_fav():
     item = request.get_json()
 
     user = db.session.execute(db.select(User).where(User.id == 2)) """
+
 
 @app.route('/products', methods=['GET'])
 def get_products():
@@ -471,6 +478,7 @@ def get_products():
         return jsonify([product.serialize() for product in products]), 200
     except Exception as e:
         raise APIException(str(e), status_code=500)
+
 
 @app.route('/products/<int:id>', methods=['GET'])
 def get_product_by_id(id):
@@ -487,7 +495,8 @@ def get_product_by_id(id):
 
     except Exception as e:
         raise APIException(str(e), status_code=500)
-    
+
+
 @app.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
@@ -516,9 +525,8 @@ def register():
         email = data.get("email")
         password = data.get("password")
         firstname = data.get("firstname") or data.get("nombre")
-        lastname  = data.get("lastname")  or data.get("apellido")
+        lastname = data.get("lastname") or data.get("apellido")
 
-        # 🔒 fuerza rol a COSTUMER (y asegúrate de que existe en BD)
         rol_value = RoleEnum.COSTUMER
 
         if not all([email, password, firstname, lastname]):
@@ -562,9 +570,46 @@ def protected():
     return jsonify(user.serialize()), 200
 
 
+@app.route("/create-checkout-session", methods=["POST"])
+def create_checkout_session():
+    backend_url = os.getenv("VITE_URL", os.getenv("BACKEND_URL", "http://localhost:3000"))
+
+    data = request.get_json()
+    items = data.get("items", [])
+    subtotal = data.get("subtotal", 0)
+
+    try:
+        line_items = []
+        for item in items:
+            line_items.append({
+                "price_data": {
+                    "currency": "eur",
+                    "product_data": {"name": item["name"][:127]},
+                    "unit_amount": int(item["unit_amount"]),
+                },
+                "quantity": int(item["quantity"]),
+            })
+
+        session = stripe.checkout.Session.create(
+            mode="payment",
+            line_items=line_items,
+            payment_method_types=["card"],
+            phone_number_collection={"enabled": True},
+            shipping_address_collection={
+                "allowed_countries": ["ES"]
+            },
+            allow_promotion_codes=False,
+            success_url=f"{backend_url}",
+            cancel_url=f"{backend_url}",
+        )
+        return jsonify({"url": session.url})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+
+
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3001))
     app.run(host='0.0.0.0', port=PORT, debug=True)
-

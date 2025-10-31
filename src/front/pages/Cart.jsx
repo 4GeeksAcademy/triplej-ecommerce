@@ -10,19 +10,50 @@ export const Cart = () => {
     const { currentUser } = useAuth();
     const navigate = useNavigate();
 
+    const handlePay = async () => {
+        // Preparamos los items para Stripe
+        const items = orders.map((prod, id) => ({
+            name: prod['product_details']['name'], 
+            unit_amount: Math.round(prod['product_details']['price'] * 100),
+            quantity: amounts[id]  
+        }));
+
+        // Enviamos los datos del carrito al backend
+        const response = await fetch("/create-checkout-session", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                items: items,
+                subtotal: subtotal 
+            }),
+        });
+
+        const data = await response.json();
+
+        // Si el backend devuelve la URL de Stripe, redirigimos al usuario
+        if (data.url) {
+            window.location.href = data.url;
+        } else {
+            console.error("Error al procesar el pago", data.error);
+        }
+    };
+
+
     const handleDelete = (prod_id) => {
         fetch(`/my-cart/${prod_id}`, {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",
-            }, 
+            },
             body: JSON.stringify({ currentUser }),
         })
-        .then(resp => resp.json())
-        .then(data => {
-            console.log(data);
-            setOrders([...orders.filter(order => order['product_details']['id'] != prod_id)])
-        })
+            .then(resp => resp.json())
+            .then(data => {
+                console.log(data);
+                setOrders([...orders.filter(order => order['product_details']['id'] != prod_id)])
+            })
     }
 
     useEffect(() => {
@@ -102,7 +133,7 @@ export const Cart = () => {
                     <p className="">SUBTOTAL: <span className="px-3 mx-3 border-bottom border-dark">{subtotal} &euro;</span></p>
                     <div className="w-25 ms-auto gap-3">
                         <button className="btn btn-outline-secondary w-40 me-2" onClick={() => navigate("/products")}>Keep buying!</button>
-                        <button className="btn btn-outline-primary w-45">Pay</button>
+                        <button className="btn btn-outline-primary w-45" onClick={handlePay}>Pay</button>
                     </div>
                 </div>
             </div>
