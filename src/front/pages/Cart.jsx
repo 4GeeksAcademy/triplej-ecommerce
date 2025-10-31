@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { Counter } from "../components/Counter";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../AuthContext";
 
 export const Cart = () => {
     const [subtotal, setSubtotal] = useState(0);
     const [amounts, setAmounts] = useState({});
     const [orders, setOrders] = useState([]);
+    const { currentUser } = useAuth();
     const navigate = useNavigate();
 
     const handleDelete = (prod_id) => {
@@ -13,7 +15,8 @@ export const Cart = () => {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",
-            }
+            }, 
+            body: JSON.stringify({ currentUser }),
         })
         .then(resp => resp.json())
         .then(data => {
@@ -23,7 +26,7 @@ export const Cart = () => {
     }
 
     useEffect(() => {
-        fetch('/my-cart')
+        fetch(`/my-cart/${currentUser.id}`)
             .then(resp => resp.json())
             .then(data => {
                 console.log(data);
@@ -34,7 +37,7 @@ export const Cart = () => {
                 setOrders(data[0]['products']);
             })
             .catch(error => console.log({ error }))
-    }, []);
+    }, [currentUser]);
 
     useEffect(() => {
         const subtotal = orders.reduce((acc, prod, id) => acc + (amounts[id] * prod.product_details.price), 0);

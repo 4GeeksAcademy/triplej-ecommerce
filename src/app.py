@@ -69,6 +69,29 @@ def _reset_user_id_sequence_once():
 with app.app_context():
     _reset_user_id_sequence_once()
 
+
+def _reset_user_id_sequence_once():
+    if db.engine.url.get_backend_name() != "postgresql":
+        return
+    try:
+        db.session.execute(text("""
+            SELECT setval(
+              pg_get_serial_sequence('"user"', 'id'),
+              COALESCE((SELECT MAX(id) FROM "user"), 0),
+              true
+            );
+        """))
+        db.session.commit()
+        print("[SEQ] 'user'.id sequence reseteada ✅")
+    except Exception as e:
+        db.session.rollback()
+        print("[SEQ] No se pudo resetear la secuencia:", e)
+
+
+# ▶️ Lánzalo una sola vez al cargar la app
+with app.app_context():
+    _reset_user_id_sequence_once()
+
 # Add all endpoints form the API with a "api" prefix
 app.register_blueprint(api, url_prefix='/api')
 
@@ -165,13 +188,15 @@ def get_all_orders():
         raise APIException(str(e), status_code=500)
 
 
-@app.route('/my-cart', methods=['GET'])
-def get_orders():
+@app.route('/my-cart/<int:user_id>', methods=['GET'])
+def get_orders(user_id):
     try:
+
+
         results = db.session.execute(
             db.select(Order, User, Product, OrderItem)
             .join(Order.users)
-            .where(User.id == 2)
+            .where(User.id == user_id)
             .join(Order.products)
             .join(Order.items)).all()
 
@@ -221,8 +246,8 @@ def delete_prod_from_cart(prod_id):
             db.session.remove(order)
             db.session.commit()
         else:
+            order.products.remove(product)
             db.session.delete(order_item)
-            db.session.commit()
 
         return jsonify({"message": "Delete completed!"}), 200
     except Exception as e:
@@ -345,6 +370,11 @@ def add_favorites():
         db.session.rollback()
         raise APIException(str(e), status_code=500)
 
+""" @app.route('/favs', methods=['POST'])
+def add_fav():
+    item = request.get_json()
+
+    user = db.session.execute(db.select(User).where(User.id == 2)) """
 
 @app.route('/user_favs', methods=['POST'])
 def add_user_favs():
@@ -588,6 +618,7 @@ def protected():
         return jsonify({"msg": "User not found"}), 404
 
     return jsonify(user.serialize()), 200
+
 
 
 # this only runs if `$ python src/main.py` is executed

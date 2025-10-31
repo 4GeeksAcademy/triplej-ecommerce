@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Home.css";
 
-// Agrupa en chunks de tamaño `size`: [a,b,c,d,e,f] -> [[a,b,c],[d,e,f]]
+// Agrupa en chunks de tamaño `size`: [a,b,c,d,e,f] -> [[a,b,c,d],[e,f,g,h]]
 const chunk = (arr, size) =>
   arr.reduce((acc, _, i) => (i % size ? acc : [...acc, arr.slice(i, i + size)]), []);
 
@@ -22,13 +22,13 @@ export const Home = () => {
   const [flipped, setFlipped] = useState(false);
   const [flippedArtist, setFlippedArtist] = useState(false);
 
-  const navigate = useNavigate(); // 👈 ya lo tienes
+  const navigate = useNavigate();
 
   useEffect(() => {
     const load = async () => {
       try {
         setStatus("loading");
-        const res = await fetch("/products"); // ← pasa por el proxy
+        const res = await fetch("/products");
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         setAllProducts(data);
@@ -42,98 +42,68 @@ export const Home = () => {
     load();
   }, []);
 
-  // Prepara slides de 3 productos
-  const slides = useMemo(() => chunk(all_products, 3), [all_products]);
+  const slides = useMemo(() => chunk(all_products, 4), [all_products]);
 
   return (
     <div className="container-fluid my-5">
-      <h2 className="text-center mb-4 fw-bold">Best Product</h2>
+      <h2 className="text-center mb-4 fw-bold">Our Product</h2>
 
       {status === "loading" && <p className="text-center">Cargando productos…</p>}
       {status === "error" && <p className="text-danger text-center">{error}</p>}
 
       {slides.length > 0 && (
-        <div
-          id="carouselProducts"
-          className="carousel slide"
-          data-bs-ride="carousel"
-          style={{ width: "90%", margin: "0 auto" }}
-        >
-          <div className="carousel-inner">
-            {slides.map((group, slideIdx) => (
-              <div
-                key={`slide-${slideIdx}`}
-                className={`carousel-item ${slideIdx === 0 ? "active" : ""}`}
-              >
-                <div className="d-flex justify-content-center">
-                  {group.map((p, i) => {
-                    const src = normalizeImgPath(p.img_path);
-                    return (
-                      <img
-                        key={`${p.id ?? p.name}-${i}`}
-                        src={src || "/assets/img/placeholder.jpg"}
-                        alt={p.name}
-                        className="mx-2"
-                        style={{
-                          width: "33%",
-                          height: "250px",
-                          objectFit: "cover",
-                          display: "block",
-                          cursor: "pointer", // 👈 para indicar clic
-                        }}
-                        loading="lazy"
-                        onClick={() => navigate(`/product/${p.id}`)} // 👈 navega al producto individual
-                        onError={(e) => {
-                          e.currentTarget.onerror = null; // evita loop
-                          e.currentTarget.src = "/assets/img/placeholder.jpg";
-                        }}
-                      />
-                    );
-                  })}
+  <div className="carousel-container">
+    {/* Botón izquierda */}
+    <button
+      className="scroll-btn left"
+      onClick={() =>
+        document.querySelector("#carouselTrack").scrollBy({ left: -1000, behavior: "smooth" })
+      }
+    >
+      ‹
+    </button>
 
-                  {/* Rellena huecos si faltan imágenes */}
-                  {group.length < 3 &&
-                    Array.from({ length: 3 - group.length }).map((_, k) => (
-                      <img
-                        key={`filler-${slideIdx}-${k}`}
-                        src="/assets/img/placeholder.jpg"
-                        alt="Filler"
-                        className="mx-2"
-                        style={{
-                          width: "33%",
-                          height: "250px",
-                          objectFit: "cover",
-                          display: "block",
-                        }}
-                        loading="lazy"
-                      />
-                    ))}
-                </div>
-              </div>
-            ))}
+    {/* Carrusel principal */}
+    <div className="carousel-track" id="carouselTrack">
+      {slides.flat().slice(0, 12).map((p, i) => { // ← Solo toma los primeros 12 productos (3 páginas de 4)
+        const src = normalizeImgPath(p.img_path);
+        return (
+          <div
+            key={`${p.id ?? p.name}-${i}`}
+            className="carousel-card"
+            onClick={() => navigate(`/product/${p.id}`)}
+          >
+            <div className="image-wrapper">
+              <img
+                src={src || "/assets/img/placeholder.jpg"}
+                alt={p.name}
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = "/assets/img/placeholder.jpg";
+                }}
+              />
+            </div>
+            <div className="carousel-info">
+              <h5>{p.name}</h5>
+              <p className="price">{Number(p.price ?? 0).toFixed(2)} €</p>
+            </div>
           </div>
+        );
+      })}
+    </div>
 
-          {/* Flechas del carrusel */}
-          <button
-            className="carousel-control-prev"
-            type="button"
-            data-bs-target="#carouselProducts"
-            data-bs-slide="prev"
-          >
-            <span className="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span className="visually-hidden">Anterior</span>
-          </button>
-          <button
-            className="carousel-control-next"
-            type="button"
-            data-bs-target="#carouselProducts"
-            data-bs-slide="next"
-          >
-            <span className="carousel-control-next-icon" aria-hidden="true"></span>
-            <span className="visually-hidden">Siguiente</span>
-          </button>
-        </div>
-      )}
+    {/* Botón derecha */}
+    <button
+      className="scroll-btn right"
+      onClick={() =>
+        document.querySelector("#carouselTrack").scrollBy({ left: 1000, behavior: "smooth" })
+      }
+    >
+      ›
+    </button>
+  </div>
+)}
+
 
       {/* Secciones debajo del carrusel */}
       <div className="row mt-5 text-center">
@@ -144,7 +114,6 @@ export const Home = () => {
             onClick={() => setFlipped(!flipped)}
           >
             <div className="flip-card-inner">
-              {/* Frente */}
               <div className="flip-card-front">
                 <img
                   src="/assets/img/nosotros.jpg"
@@ -155,7 +124,6 @@ export const Home = () => {
                 />
               </div>
 
-              {/* Reverso */}
               <div className="flip-card-back">
                 <p>
                   Somos un grupo de Artistas emprendedores apasionados por el arte y la
@@ -175,7 +143,6 @@ export const Home = () => {
             onClick={() => setFlippedArtist(!flippedArtist)}
           >
             <div className="flip-card-inner">
-              {/* Frente */}
               <div className="flip-card-front">
                 <img
                   src="/assets/img/artistas.jpg"
@@ -186,7 +153,6 @@ export const Home = () => {
                 />
               </div>
 
-              {/* Reverso */}
               <div className="flip-card-back text-start">
                 <p>
                   <strong>Julia Navio</strong> — especialidad: escultura, pintura,

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAuth } from "../AuthContext";
 import "./products.css";
 import { useAuth } from "../AuthContext";
 import { useFavorites } from "../FavoritesContext";
@@ -160,7 +161,7 @@ export default function Products() {
                 <article
                   className="card"
                   key={p.id ?? p.name}
-                  onClick={() => navigate(`/product/${p.id}`)} // ✅ CORREGIDO
+                  onClick={() => navigate(`/product/${p.id}`)} 
                   style={{ cursor: "pointer" }}
                 >
                   <div className="thumb">
@@ -188,7 +189,6 @@ export default function Products() {
                     </div>
 
                     <div className="actions">
-                      {/* ❤️ Botón de favoritos */}
                       <button
                         className={`heart-btn ${isFav ? "active" : ""}`}
                         onClick={(e) => {
@@ -206,13 +206,14 @@ export default function Products() {
                         ></i>
                       </button>
 
-                      {/* 🛒 Botón de carrito */}
                       <button
                         className="mini-btn"
                         onClick={(e) => {
-                          e.stopPropagation(); // evita navegar al hacer click
-                          alert(`Añadido: ${p.name}`);
+                          e.stopPropagation();
+                          addToCart(p);
                         }}
+                        disabled={disabled}
+
                       >
                         Añadir al carrito
                       </button>
