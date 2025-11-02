@@ -108,7 +108,7 @@ export const Home = () => {
       {/* Secciones debajo del carrusel */}
       <div className="row mt-5 text-center">
         <div className="col-md-6 mb-4">
-          <h2>Nosotros</h2>
+          <h2>About us</h2>
           <div
             className={`flip-card ${flipped ? "flipped" : ""}`}
             onClick={() => setFlipped(!flipped)}
@@ -125,19 +125,19 @@ export const Home = () => {
               </div>
 
               <div className="flip-card-back">
-                <p>
-                  Somos un grupo de Artistas emprendedores apasionados por el arte y la
-                  creatividad. Trabajamos para ofrecer productos únicos y llenos de
-                  inspiración. Es un nuevo comienzo: nuestro arte es único.
+                <p style={{ textAlign: "justify" }}>
+                  We are a group of entrepreneurial artists passionate about art and creativity.
+                  We work to offer unique, inspiring products.
+                  It’s a new beginning — our art is one of a kind
                 </p>
               </div>
             </div>
           </div>
-          <p className="mt-2 text-muted">Haz clic para girar</p>
+          <p className="mt-2 text-muted">Click to rotate</p>
         </div>
 
         <div className="col-md-6 mb-4">
-          <h2>Artistas</h2>
+          <h2>Artists</h2>
           <div
             className={`flip-card ${flippedArtist ? "flipped" : ""}`}
             onClick={() => setFlippedArtist(!flippedArtist)}
@@ -155,20 +155,19 @@ export const Home = () => {
 
               <div className="flip-card-back text-start">
                 <p>
-                  <strong>Julia Navio</strong> — especialidad: escultura, pintura,
-                  fotografía.
+                  <strong>Julia Navío</strong> — specialty: sculpture, painting, photography.
                 </p>
                 <p>
-                  <strong>Joaquín E. Rivero Delgado</strong> — especialidad: pintura,
-                  escultura.
+                  <strong>Joaquín E. Rivero Delgado</strong> — specialty: painting,
+                  sculpture.
                 </p>
                 <p>
-                  <strong>José Rey</strong> — especialidad: arte digital, fotografía.
+                  <strong>José Rey</strong> — specialty: digital art, photography.
                 </p>
               </div>
             </div>
           </div>
-          <p className="mt-2 text-muted">Haz clic para girar</p>
+          <p className="mt-2 text-muted">Click to rotate</p>
         </div>
       </div>
     </div>
