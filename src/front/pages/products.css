@@ -75,7 +75,7 @@ body{
   width:28px; height:28px;
   display:grid; place-items:center;
   border:1px solid var(--line);
-  background:#fff; border-radius:50%;
+  background:#BC9ECC; border-radius:50%;
   box-shadow:0 2px 8px rgba(0,0,0,.08);
   cursor:pointer; z-index:2001;
 }
@@ -96,8 +96,10 @@ body{
 .main{ display:grid; gap:var(--gap) }
 
 .grid{
-  display:grid; gap:var(--gap);
+  display:grid;
+  gap:var(--gap);
   grid-template-columns:repeat(3, minmax(0, 1fr));
+  align-items: start;  
 }
 
 .card{
@@ -113,7 +115,7 @@ body{
   width: 100%;
   height: 250px; /* controla la altura de cada tarjeta */
   overflow: hidden;
-  background-color: #f9f9f9;
+  background-color: white;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -121,6 +123,7 @@ body{
 
 /* === Imagen dentro del contenedor === */
 .thumb img {
+  padding-top: 8px;
   width: 100%;
   height: 100%;
   object-fit: contain; /* ✅ la imagen llena todo el espacio */

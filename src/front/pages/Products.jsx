@@ -38,7 +38,7 @@ export default function Products() {
   const navigate = useNavigate();
 
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("todas");
+  const [category, setCategory] = useState("All");
   const [products, setProducts] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -88,11 +88,11 @@ export default function Products() {
         if (typeof data?.quantity === "number" && typeof data?.stock === "number") {
           setDisabled(data.quantity === data.stock);
         }
-        showToast("Añadido al carrito", "success");
+        showToast("Added to cart", "success");
       })
       .catch((err) => {
         console.error(err);
-        showToast("Usuario no registrado", "error");
+        showToast("User not registered", "error");
       });
   };
 
@@ -118,21 +118,21 @@ export default function Products() {
   // Filtros
   useEffect(() => {
     setQuery(searchParams.get("q") || "");
-    setCategory(searchParams.get("cat") || "todas");
+    setCategory(searchParams.get("cat") || "All");
   }, [searchParams]);
 
   const availableCategories = useMemo(() => {
     const set = new Set(
       products.map((p) => (p.category || "").toString().toLowerCase())
     );
-    return ["todas", ...[...set].filter(Boolean).sort()];
+    return ["All", ...[...set].filter(Boolean).sort()];
   }, [products]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return products.filter((p) => {
       const cat = (p.category || "").toString().toLowerCase();
-      const okCat = category === "todas" ? true : cat === category;
+      const okCat = category === "All" ? true : cat === category;
       const okTxt = q === "" ? true : (p.name || "").toLowerCase().includes(q);
       return okCat && okTxt;
     });
@@ -181,7 +181,7 @@ export default function Products() {
           </button>
 
           <div className="sidebar-content">
-            <h4>Categorías</h4>
+            <h4>Categories</h4>
             <ul>
               {availableCategories.map((cat) => (
                 <li key={cat}>
@@ -192,14 +192,14 @@ export default function Products() {
                       checked={category === cat}
                       onChange={() => {
                         const next = new URLSearchParams(searchParams);
-                        if (cat && cat !== "todas") next.set("cat", cat);
+                        if (cat && cat !== "All") next.set("cat", cat);
                         else next.delete("cat");
                         setSearchParams(next, { replace: true });
                         setCategory(cat);
                       }}
                     />
                     <span className="label">
-                      {cat === "todas" ? "Todas" : categoryLabel(cat)}
+                      {cat === "All" ? "All" : categoryLabel(cat)}
                     </span>
                   </label>
                 </li>
@@ -257,17 +257,17 @@ export default function Products() {
                           e.stopPropagation();
                           // Calcula el mensaje en base al estado actual
                           if (!currentUser) {
-                            showToast("Usuario no registrado", "error");
+                            showToast("User not registered", "error");
                             return;
                           }
                           const wasFav = favorites.has(p.id);
                           toggleFavorite(p.id);
                           showToast(
-                            wasFav ? "Quitado de favoritos" : "Añadido a favoritos",
+                            wasFav ? "Removed from favorites" : "Added to favorites",
                             "info"
                           );
                         }}
-                        aria-label={isFav ? "Quitar de favoritos" : "Añadir a favoritos"}
+                        aria-label={isFav ? "Delete from favorites" : "Add to favorites"}
                       >
                         <i
                           className={favorites.has(p.id) ? "fas fa-heart" : "far fa-heart"}
@@ -282,7 +282,7 @@ export default function Products() {
                         }}
                         disabled={disabled}
                       >
-                        Añadir al carrito
+                        Add to cart
                       </button>
                     </div>
                   </div>
