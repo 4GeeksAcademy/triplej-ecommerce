@@ -290,7 +290,7 @@ export default function Products() {
               );
             })}
             {status === "idle" && filtered.length === 0 && (
-              <p className="muted">No hay resultados con esos filtros.</p>
+              <p className="muted">There are not results.</p>
             )}
           </section>
         </main>

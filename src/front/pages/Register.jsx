@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+
 
 export const Register = () => {
   const navigate = useNavigate();
@@ -174,7 +175,7 @@ export const Register = () => {
       </form>
 
       <p className="text-center mt-3">
-        Don't you have an account? <a href="/login">Login</a>
+        Do you have an account? <Link to="/login">Login</Link>
       </p>
     </div>
   );

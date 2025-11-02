@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
+import "./IndividualProduct.css";
+
 
 
 export default function IndividualProduct() {
@@ -54,17 +56,17 @@ export default function IndividualProduct() {
   if (status === "error") {
     return (
       <div className="text-center mt-5">
-        <p className="text-danger">Error al cargar producto:</p>
+        <p className="text-danger">Error loading product:</p>
         <pre>{error}</pre>
         <button className="btn btn-secondary mt-3" onClick={() => navigate(-1)}>
-          Volver atrás
+          Back
         </button>
       </div>
     );
   }
 
   if (!product) {
-    return <p className="text-center mt-5">Producto no encontrado.</p>;
+    return <p className="text-center mt-5">Product not found.</p>;
   }
 
   const imgSrc =
@@ -72,8 +74,8 @@ export default function IndividualProduct() {
 
   return (
     <div className="container my-5">
-      <button className="btn btn-outline-secondary mb-4" onClick={() => navigate(-1)}>
-        ← Volver
+      <button className="btn custom-back-btn mb-4" onClick={() => navigate(-1)}>
+        ← Back
       </button>
 
       <div className="row align-items-start">
@@ -114,15 +116,19 @@ export default function IndividualProduct() {
                   setTimeout(() => setShowTextBox(false), 2500); 
                 }}
               >
-                Añadir al carrito
+                Add to cart
               </button>
 
               {showTextBox && (
                 <div
-                  className="position-absolute top-100 start-50 translate-middle-x mt-2 px-3 py-2 bg-success text-white rounded shadow-sm"
+                  className={`position-absolute top-100 start-50 translate-middle-x mt-2 px-3 py-2 text-white rounded shadow-sm ${
+                    currentUser ? "bg-success" : "bg-danger"
+                  }`}
                   style={{ fontSize: "0.9rem", whiteSpace: "nowrap" }}
                 >
-                  Has añadido <strong>{product.name}</strong> al carrito
+                  {currentUser
+                    ? <>Added <strong>{product.name}</strong> to cart</>
+                    : <>User not registered</>}
                 </div>
               )}
             </div>
