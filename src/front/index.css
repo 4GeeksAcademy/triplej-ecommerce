@@ -11,3 +11,8 @@
 .object-position-center {
     object-position: center !important;
 }
+
+h1.text-center {
+    margin-top: 15%;
+    margin-bottom: 15%;
+}

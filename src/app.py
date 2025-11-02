@@ -198,11 +198,14 @@ def get_orders(user_id):
             db.select(Order, User, Product, OrderItem)
             .join(Order.users)
             .where(User.id == user_id)
-            .join(Order.products)
-            .join(Order.items)).all()
+            .join(Order.items)
+            .join(OrderItem.product)).all()
 
         orders_dict = {}
         for order, _, prod, order_item in results:
+
+            order_item_id = order_item.id
+            quantity = order_item.quantity
 
             if order.id not in orders_dict:
                 order_info = order.serialize()
@@ -213,8 +216,8 @@ def get_orders(user_id):
                 continue
 
             orders_dict[order.id]['products'].append({
-                "item_id": order_item.id,
-                "quantity_ordered": order_item.quantity,
+                "item_id": order_item_id,
+                "quantity_ordered": quantity,
                 "product_details": prod.serialize()
             })
 
@@ -303,25 +306,49 @@ def add_item_to_cart():
 
     except Exception as e:
         db.session.rollback()
-        raise APIException(str(e), status_code=500)
+        return jsonify({"message": str(e)}), 500
+
+
+@app.route('/my-cart', methods=['PUT'])
+def update_amount():
+    try:
+        request_body = request.get_json()
+        order_item_id = request_body.get("order_item_id")
+        quantity = request_body.get("counter")
+
+        db.session.execute(
+            db.update(OrderItem)
+            .where(OrderItem.id == order_item_id)
+            .values(quantity=quantity)
+        )
+
+        db.session.commit()
+
+        result = db.session.execute(db.select(OrderItem).where(
+            OrderItem.id == order_item_id)).scalar_one_or_none()
+        if result is None: abort(404, f"Order_item id = ${order_item_id} not found!")
+        result = result.serialize()
+
+        return jsonify({"message": "Amount updated", "result": result})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route('/my-cart/<prod_id>', methods=['DELETE'])
 def delete_prod_from_cart(prod_id):
     try:
 
-        user = request.get_json().get("currentUser")
+        current_user = request.get_json().get("currentUser")
 
         product = db.session.execute(db.select(Product).where(
             Product.id == prod_id)).scalar_one_or_none()
         user = db.session.execute(db.select(User).where(
-            User.id == user["id"])).scalar_one_or_none()
+            User.id == current_user["id"])).scalar_one_or_none()
 
         order = db.session.execute(db.select(Order).join(
-            Order.users).where(User.id == user["id"])).scalar_one_or_none()
+            Order.users).where(User.id == current_user["id"])).scalar_one_or_none()
         if order is None:
-            abort(
-                404, f'Order does not have a record with user_id = {user["id"]}.')
+            abort(404, f'Order does not have a record with user_id = {current_user["id"]}.')
         order_item = db.session.execute(db.select(OrderItem).where(
             OrderItem.prod_id == prod_id).where(OrderItem.order_id == order.id)).scalar_one_or_none()
         if order_item is None:
@@ -464,11 +491,149 @@ def add_favorites():
         raise APIException(str(e), status_code=500)
 
 
-""" @app.route('/favs', methods=['POST'])
-def add_fav():
-    item = request.get_json()
+@app.route('/user_favs', methods=['POST'])
+def add_user_favs():
+    try:
+        user_fav = request.get_json()
+        print("Request body: ", user_fav)
 
-    user = db.session.execute(db.select(User).where(User.id == 2)) """
+        for row in user_fav:
+            fav = db.session.get(Favorite, row["fav_id"])
+            user = db.session.get(User, row["user_id"])
+            if not fav or not user:
+                abort(404, description="Item not found")
+
+            fav.users.append(user)
+
+        db.session.commit()
+
+        return "user_fav filled successfully.", 201
+
+    except Exception as e:
+        db.session.rollback()
+        raise APIException(str(e), status_code=500)
+
+
+@app.route('/prod_favs', methods=['POST'])
+def add_prod_favs():
+    try:
+        prod_fav = request.get_json()
+        print("Request body: ", prod_fav)
+
+        for row in prod_fav:
+            fav = db.session.get(Favorite, row["fav_id"])
+            prod = db.session.get(Product, row["prod_id"])
+            if not fav or not prod:
+                abort(404, description="Item not found")
+
+            fav.products.append(prod)
+
+        db.session.commit()
+
+        return "user_prod filled successfully.", 201
+
+    except Exception as e:
+        db.session.rollback()
+        raise APIException(str(e), status_code=500)
+
+
+@app.route('/my-favorites/<int:user_id>', methods=['GET'])
+def get_favs(user_id):
+    try:
+        favorites = db.session.execute(
+            db.select(Favorite, Product, User)
+            .join(Favorite.users)
+            .where(User.id == user_id)
+            .join(Favorite.products)).all()
+
+        if not favorites:
+            abort(404, "Favorites has no records for user_id = ${user_id}.")
+
+        results = [{
+            "fav_id": fav.serialize().get('id'),
+            **prod.serialize()
+        } for fav, prod, _ in favorites]
+
+        return jsonify(results), 201
+
+    except Exception as e:
+        raise APIException(str(e), status_code=500)
+
+
+@app.route('/my-favorites', methods=['POST'])
+def add_fav():
+    try:
+        request_body = request.get_json()
+        if not request_body:
+            abort(404, "Empty request body.")
+        prod_id = request_body.get("prod_id")
+        if not prod_id:
+            abort(404, "Product id not found.")
+        current_user = request_body.get("currentUser")
+        if not current_user:
+            abort(404, "Current user not found.")
+
+        favorite = db.session.execute(
+            db.select(Favorite)
+            .join(Favorite.users)
+            .join(Favorite.products)
+            .where(Product.id == prod_id)
+            .where(User.id == current_user["id"])).scalar_one_or_none()
+        user = db.session.execute(db.select(User).where(
+            User.id == current_user["id"])).scalar_one_or_none()
+        product = db.session.execute(db.select(Product).where(
+            Product.id == prod_id)).scalar_one_or_none()
+
+        if favorite is None:
+            fav = Favorite()
+            user.favorites.append(fav)
+            product.favorites.append(fav)
+            db.session.add(fav)
+            db.session.flush()
+
+        else:
+            favorite.products.append(product)
+
+        db.session.commit()
+
+        return jsonify({"message": "Fav added successfully."})
+
+    except Exception as e:
+        db.session.rollback()
+        raise APIException(str(e), status_code=500)
+
+
+@app.route('/my-favorites/<int:prod_id>', methods=['DELETE'])
+def delete_fav(prod_id):
+    try:
+        current_user = request.get_json().get('currentUser')
+
+        user = db.session.execute(db.select(User).where(
+            User.id == current_user["id"])).scalar_one_or_none()
+        product = db.session.execute(db.select(Product).where(
+            Product.id == prod_id)).scalar_one_or_none()
+        favorite = db.session.execute(
+            db.select(Favorite)
+            .join(Favorite.products)
+            .join(Favorite.users)
+            .where(User.id == current_user["id"])
+            .where(Product.id == prod_id)).scalar_one_or_none()
+
+        if favorite is None:
+            abort(
+                404, f"Favorite with prod_id = ${prod_id} and user_id = ${current_user["id"]} not found.")
+
+        favorite.users.remove(user)
+        favorite.products.remove(product)
+        db.session.delete(favorite)
+        db.session.commit()
+
+        return jsonify({"message": "Fav deleted successfully."})
+
+    except Exception as e:
+        db.session.rollback()
+        raise APIException(str(e), status_code=500)
+
 
 
 @app.route('/products', methods=['GET'])

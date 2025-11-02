@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useAuth } from "../AuthContext";
 import "./products.css";
+import { useAuth } from "../AuthContext";
+import { useFavorites } from "../FavoritesContext";
 
 // Normaliza rutas de imágenes
 const normalizeImgPath = (path) => {
@@ -29,15 +30,15 @@ export default function Products() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("todas");
   const [products, setProducts] = useState([]);
-  const [favorites, setFavorites] = useState(new Set());
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
-  const [disabled, setDisabled] = useState(false);
   const { currentUser } = useAuth();
+  const { favorites, toggleFavorite } = useFavorites();
+  const [disabled, setDisabled] = useState();
 
-  const addToCart = (item) => {
+    const addToCart = (item) => {
     fetch('/my-cart', {
       method: "POST",
       headers: {
@@ -96,14 +97,6 @@ export default function Products() {
   }, [products, query, category]);
 
   const formatPrice = (n) => `${Number(n ?? 0).toFixed(2)} €`;
-
-  const toggleFavorite = (id) => {
-    setFavorites((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
 
   return (
     <div className="products-page">
@@ -225,9 +218,7 @@ export default function Products() {
                         }
                       >
                         <i
-                          className={
-                            isFav ? "fas fa-heart" : "far fa-heart"
-                          }
+                          className={favorites.has(p.id) ? "fas fa-heart" : "far fa-heart"}
                         ></i>
                       </button>
 
@@ -238,7 +229,6 @@ export default function Products() {
                           addToCart(p);
                         }}
                         disabled={disabled}
-
                       >
                         Añadir al carrito
                       </button>

@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { Counter } from "../components/Counter";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
+import { Spinner } from "react-bootstrap";
 
 export const Cart = () => {
     const [subtotal, setSubtotal] = useState(0);
     const [amounts, setAmounts] = useState({});
     const [orders, setOrders] = useState([]);
+    const [loading, setLoading] = useState(false);
     const { currentUser } = useAuth();
     const navigate = useNavigate();
 
@@ -57,6 +59,9 @@ export const Cart = () => {
     }
 
     useEffect(() => {
+        if (!currentUser) return;
+
+        setLoading(true);
         fetch(`/my-cart/${currentUser.id}`)
             .then(resp => resp.json())
             .then(data => {
@@ -66,6 +71,7 @@ export const Cart = () => {
                 );
                 setAmounts(initialAmounts);
                 setOrders(data[0]['products']);
+                setLoading(false);
             })
             .catch(error => console.log({ error }))
     }, [currentUser]);
@@ -73,8 +79,45 @@ export const Cart = () => {
     useEffect(() => {
         const subtotal = orders.reduce((acc, prod, id) => acc + (amounts[id] * prod.product_details.price), 0);
         setSubtotal(subtotal);
-    }, [amounts]);
+    }, [amounts, orders]);
+    if (loading) {
+        return (
+            <div className="container">
+                <div className="row vh-100">
+                    <div className="col-12 d-flex justify-content-center align-items-center h-75">
+                        <Spinner animation="border" role="status">
+                            <span className="visually-hidden">Loading...</span>
+                        </Spinner>
+                    </div>
+                </div>
+            </div>
+        )
+    }
 
+    if (!currentUser) {
+        return (
+            <div className="container-fluid h-100">
+                <div className="row h-100 justify-content-center">
+                    <div className="col-10">
+                        <h1 className="text-center"><Link className="text-black" to={"/login"}>Log in</Link> to see the cart!</h1>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    if (orders.length === 0) {
+        return (
+            <div className="container-fluid h-100">
+                <div className="row h-100 justify-content-center">
+                    <div className="col-10">
+                        <h1 className="text-center">Empty cart... Why don't you check our <Link className="text-black" to={"/products"}>products</Link> :D</h1>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+    
     return (
         <div className="container-fluid h-100 my-3">
             <div className="row justify-content-center">
@@ -113,6 +156,7 @@ export const Cart = () => {
                                             </td>
                                             <td className="text-center align-middle">
                                                 <Counter
+                                                    order_item_id={prod['item_id']}
                                                     amount={amounts[id]}
                                                     totalAmount={prod['product_details']['amount']}
                                                     setAmounts={(newAmount) => setAmounts((prev) => ({ ...prev, [id]: newAmount }))} />
