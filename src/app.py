@@ -2,7 +2,7 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 import os
-from flask import Flask, request, jsonify, url_for, send_from_directory, abort
+from flask import Flask, request, jsonify, url_for, send_from_directory, abort, redirect
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
@@ -15,8 +15,12 @@ from api.commands import setup_commands
 from sqlalchemy import text, func
 import sys
 import traceback
+import stripe
 
 # from models import Person
+
+stripe.api_key = os.getenv('STRIPE_API_KEY')
+
 
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(
@@ -65,7 +69,6 @@ def _reset_user_id_sequence_once():
         print("[SEQ] No se pudo resetear la secuencia:", e)
 
 
-# ▶️ Lánzalo una sola vez al cargar la app
 with app.app_context():
     _reset_user_id_sequence_once()
 
@@ -88,7 +91,6 @@ def _reset_user_id_sequence_once():
         print("[SEQ] No se pudo resetear la secuencia:", e)
 
 
-# ▶️ Lánzalo una sola vez al cargar la app
 with app.app_context():
     _reset_user_id_sequence_once()
 
@@ -488,6 +490,7 @@ def add_favorites():
         db.session.rollback()
         raise APIException(str(e), status_code=500)
 
+
 @app.route('/user_favs', methods=['POST'])
 def add_user_favs():
     try:
@@ -632,6 +635,7 @@ def delete_fav(prod_id):
         raise APIException(str(e), status_code=500)
 
 
+
 @app.route('/products', methods=['GET'])
 def get_products():
     try:
@@ -688,7 +692,6 @@ def register():
         firstname = data.get("firstname") or data.get("nombre")
         lastname = data.get("lastname") or data.get("apellido")
 
-        # 🔒 fuerza rol a COSTUMER (y asegúrate de que existe en BD)
         rol_value = RoleEnum.COSTUMER
 
         if not all([email, password, firstname, lastname]):
@@ -730,6 +733,45 @@ def protected():
         return jsonify({"msg": "User not found"}), 404
 
     return jsonify(user.serialize()), 200
+
+
+@app.route("/create-checkout-session", methods=["POST"])
+def create_checkout_session():
+    backend_url = os.getenv("VITE_URL", os.getenv("BACKEND_URL", "http://localhost:3000"))
+
+    data = request.get_json()
+    items = data.get("items", [])
+    subtotal = data.get("subtotal", 0)
+
+    try:
+        line_items = []
+        for item in items:
+            line_items.append({
+                "price_data": {
+                    "currency": "eur",
+                    "product_data": {"name": item["name"][:127]},
+                    "unit_amount": int(item["unit_amount"]),
+                },
+                "quantity": int(item["quantity"]),
+            })
+
+        session = stripe.checkout.Session.create(
+            mode="payment",
+            line_items=line_items,
+            payment_method_types=["card"],
+            phone_number_collection={"enabled": True},
+            shipping_address_collection={
+                "allowed_countries": ["ES"]
+            },
+            allow_promotion_codes=False,
+            success_url=f"{backend_url}",
+            cancel_url=f"{backend_url}",
+        )
+        return jsonify({"url": session.url})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+
 
 
 # this only runs if `$ python src/main.py` is executed
