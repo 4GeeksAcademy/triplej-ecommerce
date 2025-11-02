@@ -60,7 +60,7 @@ export const Home = () => {
         document.querySelector("#carouselTrack").scrollBy({ left: -1000, behavior: "smooth" })
       }
     >
-      ‹
+      <i className="fas fa-chevron-left"></i>
     </button>
 
     {/* Carrusel principal */}
@@ -99,7 +99,7 @@ export const Home = () => {
         document.querySelector("#carouselTrack").scrollBy({ left: 1000, behavior: "smooth" })
       }
     >
-      ›
+     <i className="fas fa-chevron-right"></i>
     </button>
   </div>
 )}
