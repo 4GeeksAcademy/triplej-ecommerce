@@ -15,6 +15,16 @@ const normalizeImgPath = (path) => {
   return s;
 };
 
+// Baraja con Fisher–Yates sin mutar el array original
+const shuffle = (arr) => {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+};
+
 export const Home = () => {
   const [all_products, setAllProducts] = useState([]);
   const [status, setStatus] = useState("idle"); // idle | loading | error
@@ -42,7 +52,13 @@ export const Home = () => {
     load();
   }, []);
 
-  const slides = useMemo(() => chunk(all_products, 4), [all_products]);
+  // Se recalcula SOLO cuando cambia all_products
+  const randomized = useMemo(() => shuffle(all_products), [all_products]);
+
+  // Si quieres seguir usando “slides” de 4
+  const slides = useMemo(() => chunk(randomized, 4), [randomized]);
+
+  const slides_original = useMemo(() => chunk(all_products, 4), [all_products]);
 
   return (
     <div className="container-fluid my-5">
@@ -65,11 +81,11 @@ export const Home = () => {
 
     {/* Carrusel principal */}
     <div className="carousel-track" id="carouselTrack">
-      {slides.flat().slice(0, 12).map((p, i) => { // ← Solo toma los primeros 12 productos (3 páginas de 4)
+      {slides.flat().slice(0, 12).map((p) => { // ← Solo toma los primeros 12 productos (3 páginas de 4)
         const src = normalizeImgPath(p.img_path);
         return (
           <div
-            key={`${p.id ?? p.name}-${i}`}
+            key={p.id}
             className="carousel-card"
             onClick={() => navigate(`/product/${p.id}`)}
           >
