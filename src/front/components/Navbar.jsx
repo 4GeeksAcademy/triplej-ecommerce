@@ -87,7 +87,7 @@ export const Navbar = () => {
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
             <li className="nav-item">
               <Link className="nav-link fw-semibold" to="/products">
-                Productos
+                Products
               </Link>
             </li>
           </ul>
@@ -97,8 +97,8 @@ export const Navbar = () => {
             <input
               className="form-control me-2"
               type="search"
-              placeholder="Buscar productos..."
-              aria-label="Buscar"
+              placeholder="Search products..."
+              aria-label="Search"
               value={term}
               onChange={e => setTerm(e.target.value)}
             />

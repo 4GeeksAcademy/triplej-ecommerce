@@ -4,16 +4,16 @@ export const Footer = () => (
       {/* Columna 1: Conócenos */}
       <div>
         <h3 className="text-xl font-bold mb-4 flex items-center">
-          <i className="fa-solid fa-users mr-2 text-blue-500"></i> Conócenos
+          <i className="fa-solid fa-users mr-2 text-blue-500"></i> About us
         </h3>
         <ul className="space-y-3">
           <li className="flex items-center hover:text-blue-400 transition-colors">
             <i className="fa-solid fa-angle-right mr-2"></i>
-            <a href="#">Sobre quiénes somos</a>
+            <a href="#">About who we are</a>
           </li>
           <li className="flex items-center hover:text-blue-400 transition-colors">
             <i className="fa-solid fa-angle-right mr-2"></i>
-            <a href="#">Sostenibilidad</a>
+            <a href="#">Sustainability</a>
           </li>
         </ul>
       </div>
@@ -21,20 +21,20 @@ export const Footer = () => (
       {/* Columna 2: Atención al Cliente */}
       <div>
         <h3 className="text-xl font-bold mb-4 flex items-center">
-          <i className="fa-solid fa-headset mr-2 text-blue-500"></i> Atención al Cliente
+          <i className="fa-solid fa-headset mr-2 text-blue-500"></i> Customer Support
         </h3>
         <ul className="space-y-3">
           <li className="flex items-center hover:text-blue-400 transition-colors">
             <i className="fa-solid fa-angle-right mr-2"></i>
-            <a href="#">Política de devolución y reembolso</a>
+            <a href="#">Return and Refund Policy</a>
           </li>
           <li className="flex items-center hover:text-blue-400 transition-colors">
             <i className="fa-solid fa-angle-right mr-2"></i>
-            <a href="#">Política de propiedad intelectual</a>
+            <a href="#">Intellectual Property Policy</a>
           </li>
           <li className="flex items-center hover:text-blue-400 transition-colors">
             <i className="fa-solid fa-angle-right mr-2"></i>
-            <a href="#">Política de envíos</a>
+            <a href="#">Shipping Policy</a>
           </li>
         </ul>
       </div>
@@ -42,20 +42,20 @@ export const Footer = () => (
       {/* Columna 3: Ayuda */}
       <div>
         <h3 className="text-xl font-bold mb-4 flex items-center">
-          <i className="fa-solid fa-circle-question mr-2 text-blue-500"></i> Ayuda
+          <i className="fa-solid fa-circle-question mr-2 text-blue-500"></i> Help
         </h3>
         <ul className="space-y-3">
           <li className="flex items-center hover:text-blue-400 transition-colors">
             <i className="fa-solid fa-angle-right mr-2"></i>
-            <a href="#">Centro de ayuda y preguntas frecuentes</a>
+            <a href="#">Help Center and FAQs</a>
           </li>
           <li className="flex items-center hover:text-blue-400 transition-colors">
             <i className="fa-solid fa-angle-right mr-2"></i>
-            <a href="#">Centro de seguridad</a>
+            <a href="#">Security Center</a>
           </li>
           <li className="flex items-center hover:text-blue-400 transition-colors">
             <i className="fa-solid fa-angle-right mr-2"></i>
-            <a href="#">Reglamento de Servicios Digitales</a>
+            <a href="#">Digital Services Regulation</a>
           </li>
         </ul>
       </div>
@@ -66,7 +66,7 @@ export const Footer = () => (
 
     {/* Pie de página */}
     <div className="mt-6 text-center text-sm text-gray-400">
-      <p>&copy; {new Date().getFullYear()} Todos los derechos reservados.</p>
+      <p>&copy; {new Date().getFullYear()} All rights reserved.</p>
     </div>
   </footer>
 );
