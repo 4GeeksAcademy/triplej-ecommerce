@@ -34,7 +34,6 @@ export const Cart = () => {
 
         const data = await response.json();
 
-        // Si el backend devuelve la URL de Stripe, redirigimos al usuario
         if (data.url) {
             window.location.href = data.url;
         } else {

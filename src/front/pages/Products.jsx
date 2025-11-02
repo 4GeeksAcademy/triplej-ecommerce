@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import "./products.css";
 import { useAuth } from "../AuthContext";
@@ -23,6 +23,16 @@ const categoryLabel = (cat) => {
   return map[cat] ?? cat;
 };
 
+// --- Toast ligero ---
+function Toast({ show, type = "info", message }) {
+  if (!show) return null;
+  return (
+    <div className={`toast-mini toast-${type}`} role="status" aria-live="polite">
+      {message}
+    </div>
+  );
+}
+
 export default function Products() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -36,23 +46,55 @@ export default function Products() {
   const [error, setError] = useState("");
   const { currentUser } = useAuth();
   const { favorites, toggleFavorite } = useFavorites();
-  const [disabled, setDisabled] = useState();
+  const [disabled, setDisabled] = useState(false);
 
-    const addToCart = (item) => {
-    fetch('/my-cart', {
+  // --- Estado y temporizador del toast ---
+  const [toast, setToast] = useState({ show: false, type: "info", message: "" });
+  const toastTimerRef = useRef(null);
+
+  const showToast = (message, type = "info") => {
+    // Limpia temporizador previo si lo hubiera para reiniciar los 2s
+    if (toastTimerRef.current) {
+      clearTimeout(toastTimerRef.current);
+    }
+    setToast({ show: true, type, message });
+    toastTimerRef.current = setTimeout(() => {
+      setToast((t) => ({ ...t, show: false }));
+      toastTimerRef.current = null;
+    }, 2000);
+  };
+
+  useEffect(() => {
+    return () => {
+      // cleanup al desmontar
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    };
+  }, []);
+
+  const addToCart = (item) => {
+    fetch("/my-cart", {
       method: "POST",
       headers: {
-        'Content-type': "application/json"
+        "Content-type": "application/json",
       },
       body: JSON.stringify({ item, currentUser }),
     })
-      .then(resp => resp.json())
-      .then(data => {
-        data.quantity == data.stock && setDisabled(true);
-        console.log("Item added to cart: ", data)
+      .then((resp) => {
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        return resp.json();
       })
-      .catch(error => console.log(error));
-  }
+      .then((data) => {
+        // si el backend devuelve quantity y stock, deshabilita cuando se igualan
+        if (typeof data?.quantity === "number" && typeof data?.stock === "number") {
+          setDisabled(data.quantity === data.stock);
+        }
+        showToast("Añadido al carrito", "success");
+      })
+      .catch((err) => {
+        console.error(err);
+        showToast("Usuario no registrado", "error");
+      });
+  };
 
   // Cargar productos
   useEffect(() => {
@@ -100,6 +142,9 @@ export default function Products() {
 
   return (
     <div className="products-page">
+      {/* Toast global */}
+      <Toast show={toast.show} type={toast.type} message={toast.message} />
+
       <div
         className={`sidebar-backdrop ${sidebarOpen ? "show" : ""}`}
         onClick={() => setSidebarOpen(false)}
@@ -108,8 +153,9 @@ export default function Products() {
       <div className={`content ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}>
         {/* Sidebar */}
         <aside
-          className={`sidebar ${sidebarOpen ? "open" : ""} ${sidebarCollapsed ? "collapsed" : ""
-            }`}
+          className={`sidebar ${sidebarOpen ? "open" : ""} ${
+            sidebarCollapsed ? "collapsed" : ""
+          }`}
         >
           <button
             className="sidebar-toggle"
@@ -177,7 +223,7 @@ export default function Products() {
                 <article
                   className="card"
                   key={p.id ?? p.name}
-                  onClick={() => navigate(`/product/${p.id}`)} 
+                  onClick={() => navigate(`/product/${p.id}`)}
                   style={{ cursor: "pointer" }}
                 >
                   <div className="thumb">
@@ -208,14 +254,20 @@ export default function Products() {
                       <button
                         className={`heart-btn ${isFav ? "active" : ""}`}
                         onClick={(e) => {
-                          e.stopPropagation(); // evita abrir el producto al hacer click
+                          e.stopPropagation();
+                          // Calcula el mensaje en base al estado actual
+                          if (!currentUser) {
+                            showToast("Usuario no registrado", "error");
+                            return;
+                          }
+                          const wasFav = favorites.has(p.id);
                           toggleFavorite(p.id);
+                          showToast(
+                            wasFav ? "Quitado de favoritos" : "Añadido a favoritos",
+                            "info"
+                          );
                         }}
-                        aria-label={
-                          isFav
-                            ? "Quitar de favoritos"
-                            : "Añadir a favoritos"
-                        }
+                        aria-label={isFav ? "Quitar de favoritos" : "Añadir a favoritos"}
                       >
                         <i
                           className={favorites.has(p.id) ? "fas fa-heart" : "far fa-heart"}

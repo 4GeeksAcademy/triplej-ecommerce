@@ -241,3 +241,23 @@ body{
   border-color:var(--heart-active);
   color:#fff;
 }
+
+/* Toast ligero */
+.toast-mini {
+  position: fixed;
+  right: 16px;
+  top: 16px;
+  z-index: 9999;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+  background: #2a2a2a;
+  color: #fff;
+  opacity: 0.98;
+  pointer-events: none; /* no captura clics */
+  transition: transform 160ms ease, opacity 160ms ease;
+}
+.toast-success { background: #1e7e34; }
+.toast-error   { background: #b02a37; }
+.toast-info    { background: #2a2a2a; }

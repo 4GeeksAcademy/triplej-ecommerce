@@ -1,12 +1,33 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useAuth } from "../AuthContext";
+
 
 export default function IndividualProduct() {
   const { id } = useParams(); // Obtiene el ID desde la URL
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const [product, setProduct] = useState(null);
   const [status, setStatus] = useState("loading");
   const [error, setError] = useState("");
+  const [showTextBox, setShowTextBox] = useState(false);
+
+
+  const addToCart = (item) => {
+    fetch('/my-cart', {
+      method: "POST",
+      headers: {
+        'Content-type': "application/json"
+      },
+      body: JSON.stringify({ item, currentUser }),
+    })
+      .then(resp => resp.json())
+      .then(data => {
+        data.quantity == data.stock ;
+        console.log("Item added to cart: ", data)
+      })
+      .catch(error => console.log(error));
+  }
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -84,18 +105,28 @@ export default function IndividualProduct() {
           </h4>
 
           <div className="mt-4 d-flex gap-3">
-            <button
-              className="btn btn-outline-primary"
-              onClick={() => alert(`Añadido al carrito: ${product.name}`)}
-            >
-              🛒 Añadir al carrito
-            </button>
-            <button
-              className="btn btn-outline-danger"
-              onClick={() => alert("Añadido a favoritos ❤️")}
-            >
-              ❤️ Favorito
-            </button>
+            <div className="position-relative">
+              <button
+                className="btn btn-outline-primary"
+                onClick={() => {
+                  addToCart(product);
+                  setShowTextBox(true);
+                  setTimeout(() => setShowTextBox(false), 2500); 
+                }}
+              >
+                Añadir al carrito
+              </button>
+
+              {showTextBox && (
+                <div
+                  className="position-absolute top-100 start-50 translate-middle-x mt-2 px-3 py-2 bg-success text-white rounded shadow-sm"
+                  style={{ fontSize: "0.9rem", whiteSpace: "nowrap" }}
+                >
+                  Has añadido <strong>{product.name}</strong> al carrito
+                </div>
+              )}
+            </div>
+
           </div>
         </div>
       </div>

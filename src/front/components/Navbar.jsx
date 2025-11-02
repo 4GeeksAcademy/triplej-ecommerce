@@ -131,10 +131,12 @@ export const Navbar = () => {
                   favProducts.length > 0 ? 
                   favProducts.map((prod, id) => (
                       <li key={id} className="d-flex justify-content-between align-items-center mb-2">
-                        <div>
-                          <p className="m-0 fw-bold">{prod.name}</p>
-                          <small className="text-muted">{prod.category}</small>
-                        </div>
+                        <Link to={`/product/${prod.id}`} className="text-decoration-none text-dark d-flex align-items-center">
+                          <div>
+                            <p className="m-0 fw-bold">{prod.name}</p>
+                            <small className="text-muted">{prod.category}</small>
+                          </div>
+                        </Link>
                         <button className="btn btn-sm btn-outline-danger ms-2" onClick={() => removeFavorite(prod.id)}>
                           <i className="fa-solid fa-trash"></i>
                         </button>
