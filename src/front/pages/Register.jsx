@@ -90,55 +90,55 @@ export const Register = () => {
 
   return (
     <div className="container mt-5" style={{ maxWidth: 500 }}>
-      <h2 className="text-center mb-4 fw-bold">Registro de Usuario</h2>
+      <h2 className="text-center mb-4 fw-bold">User registration</h2>
 
-      {status === "loading" && <p className="text-center">Enviando datos...</p>}
+      {status === "loading" && <p className="text-center">Sending data...</p>}
       {successMsg && <p className="text-success text-center">{successMsg}</p>}
       {error && <p className="text-danger text-center">{error}</p>}
 
       <form onSubmit={handleSubmit}>
         <div className="row">
           <div className="col-md-6 mb-3">
-            <label className="form-label">Nombre</label>
+            <label className="form-label">Name</label>
             <input
               type="text"
               name="nombre"
               className="form-control"
               value={form.nombre}
               onChange={handleChange}
-              placeholder="Tu nombre"
+              placeholder="Your name"
               required
             />
           </div>
           <div className="col-md-6 mb-3">
-            <label className="form-label">Apellido</label>
+            <label className="form-label">Last Name</label>
             <input
               type="text"
               name="apellido"
               className="form-control"
               value={form.apellido}
               onChange={handleChange}
-              placeholder="Tu apellido"
+              placeholder="Your last name"
               required
             />
           </div>
         </div>
 
         <div className="mb-3">
-          <label className="form-label">Correo electrónico</label>
+          <label className="form-label">Email</label>
           <input
             type="email"
             name="email"
             className="form-control"
             value={form.email}
             onChange={handleChange}
-            placeholder="tucorreo@ejemplo.com"
+            placeholder="user@gmail.com"
             required
           />
         </div>
 
         <div className="mb-3">
-          <label className="form-label">Contraseña</label>
+          <label className="form-label">Password</label>
           <input
             type="password"
             name="password"
@@ -152,7 +152,7 @@ export const Register = () => {
         </div>
 
         <div className="mb-3">
-          <label className="form-label">Confirmar contraseña</label>
+          <label className="form-label">Confirm Password</label>
           <input
             type="password"
             name="confirmPassword"
@@ -169,12 +169,12 @@ export const Register = () => {
           className="btn btn-primary w-100"
           disabled={status === "loading"}
         >
-          Registrar
+          Register
         </button>
       </form>
 
       <p className="text-center mt-3">
-        ¿Ya tienes cuenta? <a href="/login">Inicia sesión</a>
+        Don't you have an account? <a href="/login">Login</a>
       </p>
     </div>
   );
