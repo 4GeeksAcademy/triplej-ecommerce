@@ -192,16 +192,18 @@ def get_all_orders():
 def get_orders(user_id):
     try:
 
-
         results = db.session.execute(
             db.select(Order, User, Product, OrderItem)
             .join(Order.users)
             .where(User.id == user_id)
-            .join(Order.products)
-            .join(Order.items)).all()
+            .join(Order.items)
+            .join(OrderItem.product)).all()
 
         orders_dict = {}
         for order, _, prod, order_item in results:
+
+            order_item_id = order_item.id
+            quantity = order_item.quantity
 
             if order.id not in orders_dict:
                 order_info = order.serialize()
@@ -212,8 +214,8 @@ def get_orders(user_id):
                 continue
 
             orders_dict[order.id]['products'].append({
-                "item_id": order_item.id,
-                "quantity_ordered": order_item.quantity,
+                "item_id": order_item_id,
+                "quantity_ordered": quantity,
                 "product_details": prod.serialize()
             })
 
@@ -224,30 +226,146 @@ def get_orders(user_id):
         raise APIException(str(e), status_code=500)
 
 
+@app.route('/my-cart', methods=['POST'])
+def add_item_to_cart():
+    try:
+        request_body = request.get_json()
+        if not request_body:
+            abort(400, "Empty request body")
+
+        item = request_body.get("item")
+        if not item or "id" not in item:
+            abort(400, "Invalid item data")
+
+        user = request_body.get("currentUser")
+        if not user or "id" not in user:
+            abort(400, "Invalid user data")
+
+        user = db.session.execute(
+            db.select(User).where(User.id == user["id"])
+        ).scalar_one_or_none()
+        if not user:
+            abort(404, f"User with id={user['id']} not found.")
+
+        product = db.session.execute(
+            db.select(Product).where(Product.id == item["id"])
+        ).scalar_one_or_none()
+        if not product:
+            abort(404, f"Product with id={item['id']} not found.")
+
+        order = db.session.execute(
+            db.select(Order)
+            .join(Order.users)
+            .where(User.id == user.id)
+        ).scalar_one_or_none()
+
+        if not order:
+            order = Order()
+            db.session.add(order)
+            user.orders.append(order)
+            product.orders.append(order)
+            db.session.flush()
+
+        existing_item = db.session.execute(
+            db.select(OrderItem)
+            .where(OrderItem.order_id == order.id)
+            .where(OrderItem.prod_id == product.id)
+        ).scalar_one_or_none()
+
+        quantity = 1
+
+        if existing_item is None:
+            order_item = OrderItem(
+                order_id=order.id,
+                prod_id=item["id"],
+                quantity=quantity
+            )
+            order.products.append(product)
+            db.session.add(order_item)
+        else:
+            quantity = existing_item.quantity + 1
+            db.session.execute(
+                db.update(OrderItem)
+                .where(OrderItem.id == existing_item.id)
+                .values(quantity=quantity)
+            )
+        if quantity > product.amount:
+            return jsonify({"message": "Aborted, there are not that amount of products in stock."})
+
+        db.session.commit()
+
+        return jsonify({
+            "message": "Producto añadido al carrito correctamente.",
+            "order_id": order.id,
+            "prod_id": product.id,
+            "quantity": quantity,
+            "stock": product.amount
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": str(e)}), 500
+
+
+@app.route('/my-cart', methods=['PUT'])
+def update_amount():
+    try:
+        request_body = request.get_json()
+        order_item_id = request_body.get("order_item_id")
+        quantity = request_body.get("counter")
+
+        db.session.execute(
+            db.update(OrderItem)
+            .where(OrderItem.id == order_item_id)
+            .values(quantity=quantity)
+        )
+
+        db.session.commit()
+
+        result = db.session.execute(db.select(OrderItem).where(
+            OrderItem.id == order_item_id)).scalar_one_or_none()
+        if result is None: abort(404, f"Order_item id = ${order_item_id} not found!")
+        result = result.serialize()
+
+        return jsonify({"message": "Amount updated", "result": result})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route('/my-cart/<prod_id>', methods=['DELETE'])
 def delete_prod_from_cart(prod_id):
     try:
+
+        current_user = request.get_json().get("currentUser")
+
+        product = db.session.execute(db.select(Product).where(
+            Product.id == prod_id)).scalar_one_or_none()
+        user = db.session.execute(db.select(User).where(
+            User.id == current_user["id"])).scalar_one_or_none()
+
+        order = db.session.execute(db.select(Order).join(
+            Order.users).where(User.id == current_user["id"])).scalar_one_or_none()
+        if order is None:
+            abort(404, f'Order does not have a record with user_id = {current_user["id"]}.')
         order_item = db.session.execute(db.select(OrderItem).where(
-            OrderItem.prod_id == prod_id)).scalar_one_or_none()
+            OrderItem.prod_id == prod_id).where(OrderItem.order_id == order.id)).scalar_one_or_none()
         if order_item is None:
             abort(
                 404, f'OrderItem does not have a record with prod_id = {prod_id}.')
 
         count = db.session.execute(db.select(func.count(OrderItem.order_id)).where(
-            OrderItem.order_id == order_item.order_id))
-        print_stderr(count.scalar_one_or_none())
+            OrderItem.order_id == order.id)).scalar_one_or_none()
+
         if count == 1:
-            order = db.session.execute(db.select(Order).where(
-                Order.id == order_item.order_id)).scalar_one_or_none()
-            if order is None:
-                abort(
-                    404, f'Order does not have a record with id = ${order_item.order_id}')
-            db.session.remove(order_item)
-            db.session.remove(order)
-            db.session.commit()
+            db.session.delete(order_item)
+            order.products.remove(product)
+            order.users.remove(user)
+            db.session.delete(order)
         else:
             order.products.remove(product)
             db.session.delete(order_item)
+
+        db.session.commit()
 
         return jsonify({"message": "Delete completed!"}), 200
     except Exception as e:
@@ -369,12 +487,6 @@ def add_favorites():
     except Exception as e:
         db.session.rollback()
         raise APIException(str(e), status_code=500)
-
-""" @app.route('/favs', methods=['POST'])
-def add_fav():
-    item = request.get_json()
-
-    user = db.session.execute(db.select(User).where(User.id == 2)) """
 
 @app.route('/user_favs', methods=['POST'])
 def add_user_favs():
@@ -618,7 +730,6 @@ def protected():
         return jsonify({"msg": "User not found"}), 404
 
     return jsonify(user.serialize()), 200
-
 
 
 # this only runs if `$ python src/main.py` is executed

@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useAuth } from "../AuthContext";
 import "./products.css";
 import { useAuth } from "../AuthContext";
 import { useFavorites } from "../FavoritesContext";
@@ -37,6 +36,23 @@ export default function Products() {
   const [error, setError] = useState("");
   const { currentUser } = useAuth();
   const { favorites, toggleFavorite } = useFavorites();
+  const [disabled, setDisabled] = useState();
+
+    const addToCart = (item) => {
+    fetch('/my-cart', {
+      method: "POST",
+      headers: {
+        'Content-type': "application/json"
+      },
+      body: JSON.stringify({ item, currentUser }),
+    })
+      .then(resp => resp.json())
+      .then(data => {
+        data.quantity == data.stock && setDisabled(true);
+        console.log("Item added to cart: ", data)
+      })
+      .catch(error => console.log(error));
+  }
 
   // Cargar productos
   useEffect(() => {
@@ -213,7 +229,6 @@ export default function Products() {
                           addToCart(p);
                         }}
                         disabled={disabled}
-
                       >
                         Añadir al carrito
                       </button>
