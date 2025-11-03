@@ -1,0 +1,11 @@
+.custom-back-btn {
+  border: 2px solid #BC9ECC;
+  color: #BC9ECC;
+  background-color: transparent;
+  transition: all 0.3s ease;
+}
+
+.custom-back-btn:hover {
+  background-color: #BC9ECC;
+  color: white;
+}

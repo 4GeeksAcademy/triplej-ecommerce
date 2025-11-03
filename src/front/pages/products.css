@@ -1,0 +1,266 @@
+:root{
+  --bg:#f2f3f5;
+  --card:#fff;
+  --line:#e5e7eb;
+  --text:#111827;
+  --muted:#6b7280;
+  --brand:#111;
+  --accent:#111;
+
+  /* Sidebar desktop */
+  --sidebar-w:220px;          /* expandido */
+  --sidebar-w-collapsed:8px;  /* contraído = línea */
+
+  /* Componentes */
+  --r-sm:10px;
+  --r-md:14px;
+  --r-lg:16px;
+  --gap:16px;
+
+  /* Favoritos */
+  --heart-active:#e02424;
+}
+
+*{ box-sizing:border-box }
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;
+  color:var(--text);
+  background:var(--bg);
+}
+
+.products-page{ min-height:100dvh; display:flex; flex-direction:column }
+
+/* ---------- Layout base ---------- */
+.content{
+  flex:1;
+  display:grid;
+  gap:var(--gap);
+  padding:var(--gap);
+  grid-template-columns:var(--sidebar-w) 1fr;
+}
+.content.sidebar-collapsed{
+  grid-template-columns:var(--sidebar-w-collapsed) 1fr;
+}
+
+/* ---------- Sidebar ---------- */
+.sidebar{
+  position:relative;
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:var(--r-md);
+  padding:16px;
+  transition:padding .2s ease, transform .2s ease, background .2s ease, border-color .2s ease;
+}
+.sidebar h4{ margin:10px 0 }
+.sidebar-title{ margin-top:20px; color:var(--muted); font-weight:600 }
+.sidebar ul{ list-style:none; padding:0; margin:0; display:grid; gap:8px }
+.sidebar a{ color:inherit; text-decoration:none }
+.radio{ display:flex; align-items:center; gap:8px }
+.radio input{ accent-color:var(--accent) }
+.radio .label{ text-transform:capitalize }
+
+/* Colapsado = línea negra */
+.sidebar.collapsed{
+  padding:0;
+  background:white;
+  border-color:white;
+  border-radius:var(--r-md);
+}
+.sidebar.collapsed .sidebar-content{ display:none; }
+
+/* Flecha expandir/contraer (desktop) */
+.sidebar-toggle{
+  position:absolute; top:12px; right:-12px;
+  width:28px; height:28px;
+  display:grid; place-items:center;
+  border:1px solid var(--line);
+  background:#BC9ECC; border-radius:50%;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+  cursor:pointer; z-index:2001;
+}
+.sidebar-toggle svg{ width:16px; height:16px; transition:transform .2s ease; color:var(--text) }
+.chev.left { transform:rotate(0deg); }
+.chev.right{ transform:rotate(180deg); }
+
+/* Cerrar (móvil) */
+.sidebar-close{
+  display:none;
+  position:absolute; top:10px; right:12px;
+  width:34px; height:34px; line-height:1;
+  border:1px solid var(--line); background:#fff; border-radius:var(--r-sm);
+  cursor:pointer;
+}
+
+/* ---------- Main / Grid / Cards ---------- */
+.main{ display:grid; gap:var(--gap) }
+
+.grid{
+  display:grid;
+  gap:var(--gap);
+  grid-template-columns:repeat(3, minmax(0, 1fr));
+  align-items: start;  
+}
+
+.card{
+  display:grid;
+  grid-template-rows:220px auto;
+  background:transparent;
+  border:none; border-radius:var(--r-lg);
+  overflow:hidden;
+  box-shadow:0 4px 16px rgba(0,0,0,.05);
+}
+/* === Contenedor de imagen === */
+.thumb {
+  width: 100%;
+  height: 250px; /* controla la altura de cada tarjeta */
+  overflow: hidden;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* === Imagen dentro del contenedor === */
+.thumb img {
+  padding-top: 8px;
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* ✅ la imagen llena todo el espacio */
+  object-position: center; /* centrada en su recorte */
+  display: block;
+}
+
+.info{
+  display:flex; flex-direction:column; gap:10px;
+  background:#fff;
+  border:1px solid var(--line); border-top:none;
+  border-radius:0 0 var(--r-lg) var(--r-lg);
+  padding:12px 14px 14px;
+  min-height:140px;
+}
+.name{ margin:0; font:600 15px/1.2 system-ui; color:var(--text) }
+
+.meta{
+  display:flex; justify-content:space-between; align-items:baseline; gap:10px;
+}
+.cat{ color:var(--muted); }
+.price{ font-weight:700 }
+
+/* Acciones: corazón a la izquierda del botón Añadir */
+.actions{
+  margin-top:auto;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:8px;
+}
+
+/* Botón Añadir */
+.mini-btn{
+  padding:6px 10px;
+  font-size:12px;
+  border:none; border-radius:9999px;
+  background:var(--accent); color:#fff; cursor:pointer;
+  transition:transform .04s ease, opacity .2s ease;
+}
+.mini-btn:hover{ opacity:.9 }
+.mini-btn:active{ transform:scale(.98) }
+
+/* ---------- CTA ---------- */
+.custom-cta{ display:grid }
+.cta-btn{
+  height:88px; font-size:20px; cursor:pointer;
+  background:#fff; border:2px dashed var(--line); border-radius:var(--r-lg);
+  transition:transform .05s ease-in-out;
+}
+.cta-btn:active{ transform:scale(.99) }
+
+/* ---------- Backdrop + barra filtros (solo móvil) ---------- */
+.sidebar-backdrop{
+  position:fixed; inset:0; z-index:1030;
+  background:rgba(0,0,0,.35);
+  opacity:0; pointer-events:none; transition:opacity .2s ease;
+}
+.sidebar-backdrop.show{ opacity:1; pointer-events:auto }
+.filters-bar{ display:none; margin-bottom:8px }
+.filters-toggle{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:10px 12px; border:1px solid var(--line); background:#fff; border-radius:var(--r-sm);
+  cursor:pointer;
+}
+
+/* ---------- Responsive ---------- */
+.only-mobile{ display:none }
+
+/* Tablets */
+@media (max-width:1024px){
+  .grid{ grid-template-columns:repeat(2, minmax(0,1fr)) }
+  .card{ grid-template-rows:200px auto }
+}
+
+/* Off-canvas ≤992px */
+@media (max-width:992px){
+  .content{ grid-template-columns:1fr }
+  .filters-bar{ display:block }
+  .only-mobile{ display:inline-grid }
+
+  .sidebar{
+    position:fixed; inset:0 auto 0 0;
+    width:82%; max-width:340px; height:100dvh; overflow-y:auto;
+    transform:translateX(-110%); z-index:1040;
+    border-radius:0 var(--r-md) var(--r-md) 0;
+    background:#fff; border:1px solid var(--line);
+    padding:16px;
+  }
+  .sidebar.open{ transform:translateX(0) }
+  .sidebar-close{ display:inline-grid; place-items:center }
+  .sidebar-toggle{ display:none } /* ocultar flecha en móvil */
+}
+
+/* Móvil pequeño */
+@media (max-width:520px){
+  .grid{ grid-template-columns:1fr }
+  .card{ grid-template-rows:180px auto }
+}
+
+/* ---------- Favoritos (Font Awesome) ---------- */
+/* En línea dentro de .actions */
+.heart-btn{
+  position:static;
+  width:34px; height:34px;
+  display:grid; place-items:center;
+  border:1.5px solid var(--text);
+  border-radius:50%;
+  background:#fff; color:var(--text);
+  cursor:pointer;
+  transition:opacity .2s ease, transform .05s ease, background .2s ease, border-color .2s ease, color .2s ease;
+}
+.heart-btn:hover{ opacity:.85 }
+.heart-btn:active{ transform:scale(.98) }
+.heart-btn i{ font-size:16px; line-height:1 }
+.heart-btn.active{
+  background:var(--heart-active);
+  border-color:var(--heart-active);
+  color:#fff;
+}
+
+/* Toast ligero */
+.toast-mini {
+  position: fixed;
+  right: 16px;
+  top: 16px;
+  z-index: 9999;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+  background: #2a2a2a;
+  color: #fff;
+  opacity: 0.98;
+  pointer-events: none; /* no captura clics */
+  transition: transform 160ms ease, opacity 160ms ease;
+}
+.toast-success { background: #1e7e34; }
+.toast-error   { background: #b02a37; }
+.toast-info    { background: #2a2a2a; }

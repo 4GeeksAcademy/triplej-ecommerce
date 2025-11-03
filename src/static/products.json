@@ -1,0 +1,122 @@
+[
+  {
+    "artist_id": 1,
+    "name": "Silksong Hornet Resin Lamp",
+    "category": "LAMPS",
+    "details": "Dimensions: 7X14X7cm \n• Handcrafted resin art: each piece is carefully handmade with intricate details, making every lamp a unique collectible.\n• Charming lighting: soft LED options (powered by USB or battery) bring Hornet's dynamic pose to life with a magical glow.\n• Iconic display: shows Hornet in her red cape, captured mid-battle in a stunning diorama inspired by Silksong.\n• Perfect gift: a thoughtful gift for fans of Hollow Knight, Silksong, indie game lovers, and collectors of handcrafted fantasy art.\n• Versatile decoration: ideal for gaming desks, bedrooms, reading corners, or Halloween and Christmas displays.\n\nBring the legend of Hornet to life: order your Silksong Hornet resin lamp today and let the adventure continue! 🌟",
+    "amount": 10,
+    "price": 96,
+    "discount": 0,
+    "img_path": "/assets/img/hornet.jpg"
+  },
+  {
+    "artist_id": 1,
+    "name": "Monolith Expedition 33 Resin Lamp",
+    "category": "LAMPS",
+    "details": "Dimensions: 7X14X7cm \n• High-quality materials: Solid wood magnetic stand with a transparent resin diorama.\n• Dynamic lighting: 16 adjustable LED colors (5 W) controlled by remote (batteries not included).\n• Customizable characters: Do you like another hero or villain from Expedition 33? Send us a message to create a custom resin scene with the character of your choice!\n• Gift-ready: Includes USB cable, remote control, and elegant packaging, perfect for birthdays, holidays, or ‘I have the ashes’ celebrations.",
+    "amount": 4,
+    "price": 20,
+    "discount": 0,
+    "img_path": "/assets/img/monolith.jpg"
+  },
+  {
+    "artist_id": 1,
+    "name": "Jack Skellington Resin Lamp'",
+    "category": "LAMPS",
+    "details": "Dimesions: 12x6,5cm \n• Handcrafted resin and wood design with intricate diorama details.\n• Features the legendary sandworm from Arrakis.\n• Soft LED light for a cozy and dramatic atmosphere.\n• Perfect for science fiction lovers, fantasy collectors, and Dune enthusiasts.\n\nBring the legend of Arrakis to your home: order your Dune Sandworm resin lamp today and let the power of the desert shine! 🌟",
+    "amount": 10,
+    "price": 86,
+    "discount": 0,
+    "img_path": "/assets/img/jack.jpg"
+  },
+  {
+    "artist_id": 1,
+    "name": "Dark Souls Abysswalker Resin Lamp'",
+    "category": "LAMPS",
+    "details": "Dimensions: 12x6,5cm \n• Handcrafted with exquisite detail.\n• Captures Malenia, the Scarlet Sword, in a dramatic diorama scene.\n• A unique collectible for Elden Ring fans and Soulslike fantasy world enthusiasts.\n• The perfect gift for gamers, collectors, and lovers of fantasy art.\n• Works as decoration for Halloween, Christmas, or game rooms all year round.",
+    "amount": 5,
+    "price": 96,
+    "discount": 0,
+    "img_path": "/assets/img/darksoul.jpg"
+  },
+  {
+    "artist_id": 4,
+    "name": "Sculpute Aloy Horizon'",
+    "category": "SCULPTURES",
+    "details": "Anyone who has had the chance to play Horizon Zero Dawn ends up falling in love with Aloy, which is why it was worth having a hyper-realistic bust of her in my store.\n\nDimensions: 40.50 cm height, 33 cm width, 23 cm length\n\nCompletely handcrafted and painted\n\nMaterials: resin, acrylic paint.",
+    "amount": 4,
+    "price": 950,
+    "discount": 0,
+    "img_path": "/assets/img/aloy.jpg"
+  },
+  {
+    "artist_id": 4,
+    "name": "Sculpture Rengoku",
+    "category": "SCULPTURES",
+    "details": "Handcrafted and painted RENG0KU bust.\nThis is a version of the character from the anime made by me.\n\nDimensions (including base): 39 cm height, 22 cm width, 22 cm length\nMaterials: resin, acrylic paint.\nShipping to Spain and internationally included.",
+    "amount": 2,
+    "price": 450,
+    "discount": 0,
+    "img_path": "/assets/img/rengoku.jpg"
+  },
+  {
+    "artist_id": 4,
+    "name": "Sculpture The Batman",
+    "category": "SCULPTURES",
+    "details": "Robert Pattinson's Batman, but in pink.\nWhy not make the darkest superhero in the world in such a color?\nModeled in monster clay and epoxy putty. Cast in polyurethane resin.\n\nMaterials: resin, acrylic paint.\n\n21 cm height.",
+    "amount": 5,
+    "price": 130,
+    "discount": 0,
+    "img_path": "/assets/img/batman.jpg"
+  },
+  {
+    "artist_id": 4,
+    "name": "Sculpute Spinelli",
+    "category": "SCULPTURES",
+    "details": "The updated version of Spinelli from *Recess*.\nHandcrafted and painted through a traditional process. The Spinelli in the photos is a prototype.\nIf you want your own, I'll make one for you. That's why the shipping process takes 5 to 7 days.\n\nMaterials: resin, acrylic paint.\n\n29 cm height.",
+    "amount": 3,
+    "price": 160,
+    "discount": 0,
+    "img_path": "/assets/img/nasti.jpg"
+  },
+  {
+    "artist_id": 5,
+    "name": "Statue Diorama Future Gohan & Trunks, Dragon Ball",
+    "category": "STATUE",
+    "details": "Relive the epic battle with this stunning handmade resin diorama. Incredible details capture the essence of Future Gohan and Trunks. Perfect for any fan and collector! A unique gift that is a must-have for your collection.\n\nFeatures:\n* Handcrafted with high-quality resin.\n* Vibrant details and colors.\n* Ideal for display.\n\nGet your piece of DBZ history today!",
+    "amount": 6,
+    "price": 220,
+    "discount": 0,
+    "img_path": "/assets/img/gohantrunks.jpg"
+  },
+  {
+    "artist_id": 5,
+    "name": "Statue Monkey D.Luffy: One Piece. 3D Resin",
+    "category": "STATUE",
+    "details": "Set sail for adventure with this incredible Monkey D. Luffy figure! Capturing the essence of the Straw Hat Pirates' captain, this collectible piece is a must-have for any One Piece fan.\n\nAmazing Details: Every detail, from his iconic straw hat to his dynamic pose, has been meticulously sculpted and hand-painted.\n\nHigh-Quality Resin: Printed in premium 3D resin, this figure offers exceptional durability and a detailed finish.\n\nHand-Painted: Each figure is unique, with hand-painted details that highlight Luffy's vibrant personality.\n\nPerfect Collectible: Ideal for One Piece fans and collectors of anime and manga figures.\n\nImpactful Decoration: With its dynamic design and vibrant colors, this figure will become the centerpiece of any space.\n\nAdd Luffy to your crew and start your own adventure!",
+    "amount": 2,
+    "price": 150,
+    "discount": 0,
+    "img_path": "/assets/img/luffy.jpg"
+  },
+  {
+    "artist_id": 5,
+    "name": "Dynamic Pikachu Action Statue",
+    "category": "STATUE",
+    "details": "Capture the electric excitement of Pokémon with this fantastic Pikachu figurine! Standing 15 cm tall (approx. 5.9 inches), this statue shows the beloved Pokémon unleashing an electric attack in a dynamic action pose.\n\nFeatures:\n\n* Iconic Pokémon: Features Pikachu, the face of the Pokémon franchise, full of energy.\n* Material: Likely crafted from high-quality Resin for sharp details.\n* Size: Compact 15 cm height (approx. 5.9 inches), perfect for desks, shelves, or display cases.\n* Action Pose: Depicts Pikachu mid-attack with cool electric effects.\n* Diorama Base: Stands on a small, detailed base showing grass and rock terrain.\n* Vibrant Colors: Bright yellow and red details, characteristic of Pikachu. (Appears Hand-Painted - please confirm if ordering).\n* Perfect Gift: An electrifying gift for any Pokémon trainer, anime fan, or gamer.",
+    "amount": 8,
+    "price": 85,
+    "discount": 0,
+    "img_path": "/assets/img/pikachu.jpg"
+  },
+  {
+    "artist_id": 5,
+    "name": "Tony Stark & Iron Man",
+    "category": "STATUE",
+    "details": "Tony Stark & Iron Man: Duality of a Genius with Illumination\n\nCapture the essence of Tony Stark with this impressive dual figure, featuring both the billionaire genius and his alter ego, Iron Man. Standing at 40 cm tall for Iron Man, this piece is a tribute to the iconic superhero.\n\nRealistic Details: Tony Stark features realistic skin, while Iron Man sports an impeccable metallic finish.\n\nLED Illumination: The platform features integrated LED lighting, highlighting the figure and creating a spectacular visual effect.\n\nHand-Painted: Every detail has been meticulously hand-painted, ensuring a unique and high-quality piece.\n\nResin Print: Made with high-quality resin, this figure offers exceptional durability and a detailed finish.\n\nImpressive Dimensions: With dimensions of 40 cm x 30 cm x 30 cm, this figure becomes the centerpiece of any collection.",
+    "amount": 10,
+    "price": 180,
+    "discount": 0,
+    "img_path": "/assets/img/tony-stark.jpg"
+  }
+]
