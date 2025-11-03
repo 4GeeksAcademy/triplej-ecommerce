@@ -59,7 +59,7 @@ export const Navbar = () => {
         {/* Logo y nombre */}
         <Link className="nav-link fw-semibold" to="/">
           <img
-            src="assets/img/logo.png"
+            src="/assets/img/logo.png"
             alt="Logo"
             width="50"
             height="50"
