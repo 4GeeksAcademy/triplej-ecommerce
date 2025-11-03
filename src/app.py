@@ -621,7 +621,7 @@ def delete_fav(prod_id):
 
         if favorite is None:
             abort(
-                404, f"Favorite with prod_id = ${prod_id} and user_id = ${current_user["id"]} not found.")
+                404, f"Favorite with prod_id = ${prod_id} and user_id = ${current_user['id']} not found.")
 
         favorite.users.remove(user)
         favorite.products.remove(product)
