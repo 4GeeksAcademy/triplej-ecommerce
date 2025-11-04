@@ -105,7 +105,7 @@ export const Cart = () => {
         )
     }
 
-    if (orders.length === 0) {
+    if (orders.length === 0 && !loading) {
         return (
             <div className="container-fluid h-100">
                 <div className="row h-100 justify-content-center">

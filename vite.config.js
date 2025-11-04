@@ -27,6 +27,11 @@ export default ({ mode }) => {
           changeOrigin: true,
           secure: false,
         },
+        "/product": {
+          target: backend,
+          changeOrigin: true,
+          secure: false,
+        },
         "/login": { target: backend, changeOrigin: true, secure: false },
         "/register": { target: backend, changeOrigin: true, secure: false },
         "/protected": { target: backend, changeOrigin: true, secure: false },

@@ -11,7 +11,7 @@ export const Navbar = () => {
   const [term, setTerm] = useState("");
   const { favorites, removeFavorite } = useFavorites();
   const [products, setProducts] = useState([]);
-  
+  console.log('Current user:', currentUser)
   const favProducts = products.filter((p) => favorites.has(p.id));
 
   // Maneja la redirección del botón de usuario según si hay usuario autenticado
@@ -128,7 +128,7 @@ export const Navbar = () => {
                 <li className="dropdown-header fw-bold text-danger">Your Favorites ❤️</li>
                 <li><hr className="dropdown-divider" /></li>
                 {
-                  favProducts.length > 0 ? 
+                  (favProducts.length > 0 && currentUser) ? 
                   favProducts.map((prod, id) => (
                       <li key={id} className="d-flex justify-content-between align-items-center mb-2">
                         <Link to={`/product/${prod.id}`} className="text-decoration-none text-dark d-flex align-items-center">
@@ -149,6 +149,12 @@ export const Navbar = () => {
 
               </ul>
             </div>
+            {
+              (currentUser && currentUser.rol === 'artist') &&
+              <Link to="/newProduct" className="text-dark fs-5">
+                <i className="fa-solid fa-arrow-up-from-bracket"></i>
+              </Link>
+            }
             <Link to="/cart" className="text-success fs-5">
               <i className="fa-solid fa-cart-shopping"></i>
             </Link>

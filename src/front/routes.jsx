@@ -15,6 +15,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register"
 import { PrivateArea } from "./pages/PrivateArea";
 import IndividualProduct from "./pages/IndividualProduct";
+import { NewProduct } from "./pages/NewProduct";
 
 
 export const router = createBrowserRouter(
@@ -38,6 +39,8 @@ export const router = createBrowserRouter(
         <Route path="/register" element={<Register />} /> {/* Register */}
         <Route path="/private" element={<PrivateArea />} />
         <Route path="product/:id" element={<IndividualProduct />} />
+        <Route path="/newProduct" element={<NewProduct />} />
+
       </Route>
     )
 );
