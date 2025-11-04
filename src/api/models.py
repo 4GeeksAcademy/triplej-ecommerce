@@ -20,13 +20,6 @@ prod_order = Table(
     Column("order_id", ForeignKey("order.id")),
 )
 
-user_product = Table(
-    "user_product",
-    db.metadata,
-    Column("user_id", ForeignKey("user.id")),
-    Column("prod_id", ForeignKey("product.id")),
-)
-
 user_fav = Table(
     "user_fav",
     db.metadata,
@@ -40,8 +33,6 @@ prod_fav = Table(
     Column("prod_id", ForeignKey("product.id")),
     Column("fav_id", ForeignKey("favorite.id")),
 )
-
-
 
 class RoleEnum(enum.Enum):
     ADMIN = "admin"
@@ -67,8 +58,7 @@ class User(db.Model):
 
     orders: Mapped[list['Order']] = relationship(
         secondary="user_order", back_populates="users")
-    products: Mapped[list['Product']] = relationship(
-        secondary="user_product", back_populates="artist")
+    products: Mapped[list['Product']] = relationship(back_populates="artist")
     favorites: Mapped[list['Favorite']] = relationship(
         secondary="user_fav", back_populates="users")
 
@@ -87,7 +77,7 @@ class User(db.Model):
 class CategoryEnum(enum.Enum):
     LAMPS = "lamps"
     SCULPTURES = "sculptures"
-    STATUE = "statue"
+    STATUES = "statues"
 
 
 class Product(db.Model):

@@ -156,6 +156,42 @@ def add_users():
         db.session.rollback()
         raise APIException(str(e), status_code=500)
 
+@app.route('/product', methods=['POST'])
+def add_product():
+    try:
+        product_data = request.get_json()
+        print("Request body: ", product_data)
+        form = product_data.get("form", None)   
+        user_id = product_data.get("user_id", None)   
+        img = product_data.get("img", None)   
+
+        if not product_data:
+            abort(400, "Invalid request body.")
+        if form is None:
+            abort(404, "Form not found.")
+        if user_id is None:
+            abort(404, f"User user_id=${user_id} not found.")
+        if img is None:
+            abort(404, "Img not found.")
+
+        user = db.session.execute(db.select(User).where(
+            User.id == user_id)).scalar_one_or_none()
+        if not user:
+            abort(404, f"User with id={user_id} not found.")
+
+        new_product = Product(**form, artist_id=user_id, img_path=img.get("img_path"), discount=0)
+        print("New product: ", new_product)
+        db.session.add(new_product)
+        db.session.flush()
+        user.products.append(new_product)
+        db.session.commit()
+
+        serialized_product = new_product.serialize()
+
+        return jsonify(serialized_product), 201
+    except Exception as e:
+        db.session.rollback()
+        raise APIException(str(e), status_code=500)
 
 @app.route('/products', methods=['POST'])
 def add_products():
@@ -491,6 +527,28 @@ def add_favorites():
         raise APIException(str(e), status_code=500)
 
 
+@app.route('/user_prod', methods=['POST'])
+def add_user_prods():
+    try:
+        user_prod = request.get_json()
+        print("Request body: ", user_prod)
+
+        for row in user_prod:
+            prod = db.session.get(Product, row["prod_id"])
+            user = db.session.get(User, row["user_id"])
+            if not prod or not user:
+                abort(404, description="Item not found")
+
+            user.products.append(prod)
+
+        db.session.commit()
+
+        return "user_prod filled successfully.", 201
+
+    except Exception as e:
+        db.session.rollback()
+        raise APIException(str(e), status_code=500)
+    
 @app.route('/user_favs', methods=['POST'])
 def add_user_favs():
     try:
@@ -530,7 +588,7 @@ def add_prod_favs():
 
         db.session.commit()
 
-        return "user_prod filled successfully.", 201
+        return "user_fav filled successfully.", 201
 
     except Exception as e:
         db.session.rollback()
@@ -600,7 +658,7 @@ def add_fav():
 
     except Exception as e:
         db.session.rollback()
-        raise APIException(str(e), status_code=500)
+        raise APIException(jsonify(e), status_code=500)
 
 
 @app.route('/my-favorites/<int:prod_id>', methods=['DELETE'])

@@ -56,9 +56,9 @@ export const Home = () => {
   const randomized = useMemo(() => shuffle(all_products), [all_products]);
 
   // Si quieres seguir usando “slides” de 4
-  const slides = useMemo(() => chunk(randomized, 4), [randomized]);
+  const slides_randomized = useMemo(() => chunk(randomized, 4), [randomized]);
 
-  const slides_original = useMemo(() => chunk(all_products, 4), [all_products]);
+  const slides = useMemo(() => chunk(all_products, 4), [all_products]);
 
   return (
     <div className="container-fluid my-5">
